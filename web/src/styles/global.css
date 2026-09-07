@@ -1,0 +1,590 @@
+@import "tailwindcss";
+
+/* ============================================================
+   RETRO 2000s THEME — calmer edition
+   Identitas jendela/marquee/hit counter tetap, tapi satu aksen
+   warna (bukan pelangi), tanpa emoji — semua ikon pakai SVG.
+   ============================================================ */
+
+:root {
+	--accent-top: #2e7bdc;
+	--accent-bottom: #1257b8;
+	--link: #1155aa;
+	--link-visited: #6b3fa0;
+	--ink: #1c1c1c;
+	--muted: #666;
+	--line: #c9d4e0;
+	--desk-top: #d9e6f2;
+	--desk-bottom: #a9c3da;
+}
+
+/* ---- base ---- */
+html {
+	scroll-behavior: smooth;
+}
+
+body {
+	margin: 0;
+	background: linear-gradient(180deg, var(--desk-top) 0%, var(--desk-bottom) 100%) fixed;
+	color: var(--ink);
+	font-family: "Trebuchet MS", Verdana, Tahoma, sans-serif;
+	font-size: 15px;
+	line-height: 1.55;
+	min-height: 100vh;
+}
+
+a {
+	color: var(--link);
+	text-decoration: underline;
+}
+a:visited {
+	color: var(--link-visited);
+}
+a:hover,
+a:focus {
+	color: #b03535;
+}
+
+::selection {
+	background: #ffd76a;
+	color: #111;
+}
+
+/* ---- main window ---- */
+.win {
+	max-width: 800px;
+	margin: 30px auto;
+	background: #fff;
+	border: 1px solid #5d7ea0;
+	box-shadow: 0 2px 14px rgba(30, 60, 90, 0.35);
+}
+
+.win-titlebar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+	color: #fff;
+	padding: 5px 8px;
+	font: bold 12px/1 Tahoma, Verdana, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+.win-icon {
+	width: 13px;
+	height: 13px;
+	border: 1px solid rgba(255, 255, 255, 0.85);
+	background: linear-gradient(135deg, #ffd76a, #e8930c);
+	flex: none;
+}
+
+/* ---- marquee (one calm strip) ---- */
+.marquee {
+	overflow: hidden;
+	background: #f7f0d4;
+	border-bottom: 1px solid var(--line);
+	color: #333;
+	font-size: 13px;
+	font-weight: bold;
+}
+
+.marquee-track {
+	display: inline-flex;
+	white-space: nowrap;
+	animation: marquee-scroll 26s linear infinite;
+}
+
+.marquee-track span {
+	padding: 6px 0;
+}
+
+@keyframes marquee-scroll {
+	from {
+		transform: translateX(0);
+	}
+	to {
+		transform: translateX(-50%);
+	}
+}
+
+.marquee:hover .marquee-track {
+	animation-play-state: paused;
+}
+
+/* ---- hero ---- */
+.hero {
+	text-align: center;
+	padding: 30px 22px 14px;
+}
+
+.hero h1 {
+	margin: 0;
+	font-family: Impact, "Arial Black", "Haettenschweiler", sans-serif;
+	font-size: clamp(38px, 7vw, 56px);
+	font-weight: 800;
+	letter-spacing: 1.5px;
+	text-transform: uppercase;
+	color: var(--accent-bottom);
+	text-shadow: 2px 2px 0 rgba(60, 130, 220, 0.18);
+}
+
+.hero .aka {
+	margin: 8px 0 0;
+	font-size: 17px;
+	color: #333;
+}
+.hero .aka b {
+	color: var(--accent-bottom);
+}
+
+.hero .tagline {
+	margin: 10px auto 0;
+	max-width: 560px;
+	color: var(--muted);
+	font-style: italic;
+	font-size: 14px;
+}
+
+.avatar-wrap {
+	margin: 0 auto 16px;
+	width: 130px;
+	height: 130px;
+}
+
+.avatar-frame {
+	width: 130px;
+	height: 130px;
+	object-fit: cover;
+	border: 2px solid var(--accent-bottom);
+	outline: 1px solid #fff;
+	outline-offset: -4px;
+	background: #eef2f7;
+}
+
+.no-photo {
+	width: 130px;
+	height: 130px;
+	margin: 0 auto 16px;
+	display: grid;
+	place-items: center;
+	font: 800 46px/1 Impact, "Arial Black", sans-serif;
+	background: linear-gradient(180deg, #e8f0fa, #c9daf0);
+	color: var(--accent-bottom);
+	border: 2px solid var(--accent-bottom);
+	outline: 1px solid #fff;
+	outline-offset: -4px;
+}
+
+/* ---- hit counter ---- */
+.counter-line {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 10px;
+	margin: 14px auto 0;
+	font-size: 13px;
+	color: var(--muted);
+}
+
+.counter {
+	display: inline-flex;
+	gap: 2px;
+	background: #101418;
+	padding: 3px 4px;
+	border: 1px solid #8fa3b8;
+}
+
+.counter i {
+	font-style: normal;
+	display: inline-block;
+	min-width: 1.1em;
+	padding: 1px 2px;
+	background: #0a0c0e;
+	color: #6fe07a;
+	font: bold 15px/1.15 "Courier New", monospace;
+	text-align: center;
+}
+
+/* ---- menu ---- */
+.menu {
+	display: flex;
+	flex-wrap: wrap;
+	justify-content: center;
+	column-gap: 2px;
+	row-gap: 6px;
+	margin: 14px 22px 0;
+	padding: 8px 0 0;
+	border-top: 1px solid var(--line);
+}
+
+.menu a {
+	display: inline-block;
+	padding: 3px 14px;
+	font: bold 13px/1.4 "Trebuchet MS", Verdana, sans-serif;
+	text-decoration: none;
+	color: var(--accent-bottom);
+}
+.menu a + a {
+	border-left: 1px solid var(--line);
+}
+.menu a:hover {
+	text-decoration: underline;
+	color: #b03535;
+}
+
+/* ---- retro boxes (single accent) ---- */
+.rbox {
+	margin: 18px 16px 0;
+	border: 1px solid #b9c7d6;
+}
+
+.rbox-bar {
+	display: flex;
+	align-items: center;
+	gap: 8px;
+	padding: 5px 12px;
+	background: linear-gradient(180deg, var(--accent-top), var(--accent-bottom));
+	color: #fff;
+	font: bold 14px/1.2 "Trebuchet MS", Verdana, sans-serif;
+	letter-spacing: 0.3px;
+}
+
+.rbox-ico {
+	display: inline-flex;
+	align-items: center;
+}
+
+.rbox-body {
+	padding: 14px 18px;
+	background: #fff;
+}
+
+/* ---- about ---- */
+.pt-content p {
+	margin: 0 0 10px;
+}
+.pt-content p:last-child {
+	margin-bottom: 0;
+}
+.pt-content ul,
+.pt-content ol {
+	margin: 0 0 10px;
+	padding-left: 24px;
+}
+.pt-content li {
+	margin: 3px 0;
+}
+.pt-content strong {
+	color: var(--accent-bottom);
+}
+
+.contact-meta {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 8px 20px;
+	margin-top: 14px;
+	padding-top: 10px;
+	border-top: 1px dashed var(--line);
+	font-size: 14px;
+}
+
+.meta-item {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+}
+
+/* ---- projects ---- */
+.proj-pages {
+	margin-bottom: 4px;
+}
+
+.proj-page {
+	display: none;
+}
+.proj-page:first-child {
+	display: block;
+}
+
+.proj-grid {
+	display: grid;
+	grid-template-columns: repeat(auto-fill, minmax(230px, 1fr));
+	gap: 14px;
+}
+
+.proj-card {
+	border: 1px solid var(--line);
+	background: #fbfcfd;
+}
+
+.proj-card img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	object-fit: cover;
+	display: block;
+	border-bottom: 1px solid var(--line);
+	background: #eef2f7;
+}
+
+.proj-card .no-img {
+	width: 100%;
+	aspect-ratio: 4 / 3;
+	display: grid;
+	place-items: center;
+	background: #eef2f7;
+	color: #9aa8b6;
+	font: bold 12px "Courier New", monospace;
+	border-bottom: 1px solid var(--line);
+}
+
+.proj-card .proj-body {
+	padding: 10px 13px 12px;
+}
+.proj-card h3 {
+	margin: 0 0 5px;
+	font: bold 15px/1.3 "Trebuchet MS", Verdana, sans-serif;
+	color: var(--accent-bottom);
+}
+.proj-card p {
+	margin: 0 0 9px;
+	font-size: 13px;
+	color: #444;
+}
+
+.proj-tags {
+	margin: 0 0 10px;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+.proj-tags li {
+	background: #eef3f9;
+	border: 1px solid var(--line);
+	color: #33506e;
+	font-size: 11px;
+	padding: 1px 7px;
+}
+
+.proj-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 14px;
+	font-size: 13px;
+	font-weight: bold;
+}
+.proj-links a {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	text-decoration: none;
+	border-bottom: 1px dotted currentColor;
+}
+
+/* pager */
+.pager {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	justify-content: center;
+	gap: 8px;
+	margin-top: 16px;
+	padding-top: 12px;
+	border-top: 1px solid var(--line);
+}
+
+.pager-btn {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	padding: 3px 10px;
+	font: bold 12px/1.4 "Trebuchet MS", Verdana, sans-serif;
+	background: #fff;
+	border: 1px solid #8fa3b8;
+	color: var(--accent-bottom);
+	cursor: pointer;
+}
+.pager-btn:hover:not(:disabled) {
+	background: #eef4fb;
+}
+.pager-btn:disabled {
+	opacity: 0.45;
+	cursor: default;
+}
+.pager-num {
+	min-width: 28px;
+	justify-content: center;
+}
+.pager-current {
+	background: var(--accent-bottom);
+	border-color: var(--accent-bottom);
+	color: #fff;
+}
+.pager-info {
+	flex-basis: 100%;
+	text-align: center;
+	font-size: 11px;
+	color: var(--muted);
+}
+
+/* ---- experience ---- */
+.exp-list {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+}
+
+.exp-item {
+	display: flex;
+	gap: 18px;
+	padding: 12px 0;
+	border-bottom: 1px dashed var(--line);
+}
+.exp-item:last-child {
+	border-bottom: none;
+}
+
+.exp-date {
+	flex: 0 0 150px;
+	font: bold 12px/1.5 "Courier New", monospace;
+	color: var(--muted);
+	text-align: right;
+}
+.exp-date .now {
+	color: var(--accent-bottom);
+	font-weight: 900;
+}
+
+.exp-main {
+	flex: 1;
+}
+.exp-main h3 {
+	margin: 0 0 2px;
+	font: bold 15px/1.35 "Trebuchet MS", Verdana, sans-serif;
+	color: var(--ink);
+}
+.exp-main h3 .at {
+	color: var(--muted);
+	font-weight: normal;
+}
+.exp-main .loc {
+	display: flex;
+	align-items: center;
+	gap: 5px;
+	font-size: 12px;
+	color: var(--muted);
+}
+.exp-main p {
+	margin: 6px 0 8px;
+	font-size: 13.5px;
+	color: #3a3a3a;
+}
+.exp-tags {
+	margin: 0;
+	padding: 0;
+	list-style: none;
+	display: flex;
+	flex-wrap: wrap;
+	gap: 5px;
+}
+.exp-tags li {
+	background: #f2f5f8;
+	border: 1px solid var(--line);
+	color: #3c587a;
+	font-size: 11px;
+	padding: 1px 7px;
+}
+
+/* ---- contact / guestbook ---- */
+.guestbook-actions {
+	display: flex;
+	flex-wrap: wrap;
+	align-items: center;
+	gap: 10px 22px;
+	margin-top: 4px;
+}
+
+.xbtn {
+	display: inline-flex;
+	align-items: center;
+	gap: 8px;
+	padding: 7px 16px;
+	font: bold 14px/1.2 "Trebuchet MS", Verdana, sans-serif;
+	text-decoration: none;
+	color: #fff !important;
+	background: var(--accent-bottom);
+	border: 1px solid var(--accent-bottom);
+}
+.xbtn:hover {
+	background: #1a6fd0;
+	color: #fff !important;
+}
+
+.social-links {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px 16px;
+	font-size: 14px;
+}
+.social-links a {
+	display: inline-flex;
+	align-items: center;
+	gap: 6px;
+	text-decoration: none;
+}
+
+.email-big {
+	margin-top: 12px;
+	font: bold 14px "Courier New", monospace;
+	color: var(--ink);
+}
+
+/* ---- footer ---- */
+.footer {
+	margin-top: 18px;
+	border-top: 1px solid var(--line);
+	background: #f6f9fc;
+	padding: 14px 22px 18px;
+}
+
+.footer-copy {
+	margin: 0;
+	text-align: center;
+	font-size: 12px;
+	color: var(--muted);
+}
+
+.to-top {
+	display: inline-flex;
+	align-items: center;
+	gap: 5px;
+	margin-top: 10px;
+	font-size: 12px;
+	font-weight: bold;
+	text-decoration: none;
+	color: var(--accent-bottom);
+}
+
+/* ---- misc ---- */
+.empty-note {
+	color: var(--muted);
+	font-style: italic;
+	font-size: 13px;
+}
+
+/* ---- responsive ---- */
+@media (max-width: 560px) {
+	.win {
+		margin: 12px 6px;
+	}
+	.exp-item {
+		flex-direction: column;
+		gap: 2px;
+	}
+	.exp-date {
+		flex: none;
+		text-align: left;
+	}
+}

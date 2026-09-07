@@ -1,0 +1,21 @@
+# Docker build config/workaround dir (writable HOME substitute in sandbox)
+.docker/
+
+# local env / secrets — never commit (tapi contoh env tetap boleh di-commit)
+.env
+.env.production
+.env*.local
+*.local
+!**/.env.example
+
+# monorepo safety net (masing-masing paket juga punya .gitignore sendiri)
+node_modules/
+dist/
+.astro/
+.sanity/
+coverage/
+logs/
+*.log
+.DS_Store
+.idea/
+.bun-cache/

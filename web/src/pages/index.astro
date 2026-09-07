@@ -1,0 +1,360 @@
+---
+import '../styles/global.css';
+import { PortableText } from 'astro-portabletext';
+import Icon from '../components/Icon.astro';
+import {
+	formatMonthYear,
+	getExperiences,
+	getProfile,
+	getProjects,
+	imageUrl,
+} from '../lib/sanity';
+
+const [profile, projects, experiences] = await Promise.all([
+	getProfile(),
+	getProjects(),
+	getExperiences(),
+]);
+
+const name = profile?.name ?? 'Redho Arifin';
+const nick = profile?.nickname ?? 'Redo';
+const role = profile?.role ?? 'Programmer';
+const year = new Date().getFullYear();
+
+const visitorNo = String(
+	(1337 + [...name + nick + role].reduce((sum, c) => sum + c.charCodeAt(0), 0)) % 100000,
+).padStart(6, '0');
+
+// --- projects pagination ---
+const PROJECTS_PER_PAGE = 2; // tweak this to taste
+const projectPages: { items: typeof projects }[] = [];
+for (let i = 0; i < projects.length; i += PROJECTS_PER_PAGE) {
+	projectPages.push({ items: projects.slice(i, i + PROJECTS_PER_PAGE) });
+}
+const totalPages = projectPages.length;
+const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
+
+// brand icon name for social links
+const socialIcon = (label: string | null | undefined): string => {
+	const l = (label ?? '').toLowerCase();
+	if (l.includes('github')) return 'github';
+	if (l.includes('linkedin')) return 'linkedin';
+	if (l.includes('twitter') || l.includes('x')) return 'twitter';
+	if (l.includes('instagram')) return 'instagram';
+	if (l.includes('facebook')) return 'facebook';
+	if (l.includes('youtube')) return 'youtube';
+	return 'globe';
+};
+---
+
+<html lang="en">
+	<head>
+		<meta charset="utf-8" />
+		<meta name="viewport" content="width=device-width" />
+		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
+		<meta name="generator" content={Astro.generator} />
+		<meta
+			name="description"
+			content={`Personal homepage of ${name} (${nick}) — ${role}. ${profile?.tagline ?? ''}`.trim()}
+		/>
+		<meta property="og:title" content={`${name}'s Homepage`} />
+		<title>{`${name} (${nick}) — Homepage`}</title>
+	</head>
+
+	<body id="top">
+		<div class="win">
+			{/* ---------- window title bar ---------- */}
+			<div class="win-titlebar">
+				<span class="win-icon" aria-hidden="true"></span>
+				<span>{name} — Homepage</span>
+			</div>
+
+			{/* ---------- marquee ---------- */}
+			<div class="marquee" aria-hidden="true">
+				<div class="marquee-track">
+					<span>Welcome to {nick}'s homepage — browse the projects &amp; get in touch!</span>
+					<span>Welcome to {nick}'s homepage — browse the projects &amp; get in touch!</span>
+				</div>
+			</div>
+
+			{/* ---------- hero ---------- */}
+			<header class="hero">
+				{
+					profile?.avatar?.asset ? (
+						<div class="avatar-wrap">
+							<img
+								src={imageUrl(profile.avatar, 260) ?? ''}
+								alt={`Photo of ${name}`}
+								class="avatar-frame"
+								width="260"
+								height="260"
+							/>
+						</div>
+					) : (
+						<div class="no-photo">{name.slice(0, 1)}</div>
+					)
+				}
+				<h1>{name}</h1>
+				<p class="aka">
+					a.k.a. <b>{nick}</b> — {role}
+				</p>
+				{profile?.tagline && <p class="tagline">{profile.tagline}</p>}
+
+				<div class="counter-line">
+					<span>You are visitor number</span>
+					<span class="counter" aria-label={`Visitor number ${visitorNo}`}>
+						{visitorNo.split('').map((d) => <i>{d}</i>)}
+					</span>
+				</div>
+			</header>
+
+			{/* ---------- menu ---------- */}
+			<nav class="menu" aria-label="Main menu">
+				<a href="#about"><Icon name="user" size={13} /> About</a>
+				<a href="#projects"><Icon name="folder" size={13} /> Projects</a>
+				<a href="#experience"><Icon name="briefcase" size={13} /> Experience</a>
+				<a href="#contact"><Icon name="mail" size={13} /> Contact</a>
+			</nav>
+
+			{/* ---------- ABOUT ---------- */}
+			<section id="about" class="rbox">
+				<div class="rbox-bar">
+					<span class="rbox-ico"><Icon name="user" size={15} /></span>
+					<span>About Me</span>
+				</div>
+				<div class="rbox-body">
+					<div class="pt-content">
+						{profile?.bio ? (
+							<PortableText value={profile.bio} />
+						) : (
+							<p class="empty-note">(No bio yet — edit it in Sanity Studio.)</p>
+						)}
+					</div>
+					<div class="contact-meta">
+						{profile?.location && (
+							<span class="meta-item">
+								<Icon name="map-pin" size={13} />
+								{profile.location}
+							</span>
+						)}
+						{profile?.email && (
+							<span class="meta-item">
+								<Icon name="mail" size={13} />
+								<a href={`mailto:${profile.email}`}>{profile.email}</a>
+							</span>
+						)}
+					</div>
+				</div>
+			</section>
+
+			{/* ---------- PROJECTS (paginated) ---------- */}
+			<section id="projects" class="rbox">
+				<div class="rbox-bar">
+					<span class="rbox-ico"><Icon name="folder" size={15} /></span>
+					<span>Projects</span>
+				</div>
+				<div class="rbox-body">
+					{projects.length === 0 && <p class="empty-note">No projects to show yet.</p>}
+
+					{totalPages > 0 && (
+						<div class="proj-pager-wrap" data-total-pages={totalPages}>
+							<div class="proj-pages">
+								{projectPages.map((page, pageIndex) => (
+									<div class="proj-page" data-page={pageIndex}>
+										<div class="proj-grid">
+											{page.items.map((p) => (
+												<article class="proj-card">
+													{p.coverImage?.asset ? (
+														<a href={projectUrl(p) ?? '#'} target="_blank" rel="noreferrer">
+															<img
+																src={imageUrl(p.coverImage, 600) ?? ''}
+																alt={p.title ?? 'Project preview'}
+																loading="lazy"
+															/>
+														</a>
+													) : (
+														<div class="no-img">NO PREVIEW</div>
+													)}
+													<div class="proj-body">
+														<h3>{p.title}</h3>
+														{p.summary && <p>{p.summary}</p>}
+														{p.tags && p.tags.length > 0 && (
+															<ul class="proj-tags">
+																{p.tags.map((t) => <li>{t}</li>)}
+															</ul>
+														)}
+														<div class="proj-links">
+															{p.liveUrl && (
+																<a href={p.liveUrl} target="_blank" rel="noreferrer">
+																	<Icon name="external-link" size={12} /> Live
+																</a>
+															)}
+															{p.repoUrl && (
+																<a href={p.repoUrl} target="_blank" rel="noreferrer">
+																	<Icon name="code" size={12} /> Source
+																</a>
+															)}
+														</div>
+													</div>
+												</article>
+											))}
+										</div>
+									</div>
+								))}
+							</div>
+
+							{totalPages > 1 && (
+								<nav class="pager" aria-label="Projects pagination">
+									<button type="button" class="pager-btn" data-pager="prev" aria-label="Previous page">
+										<Icon name="chevron-left" size={12} /> Prev
+									</button>
+									<span class="pager-nums">
+										{Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+											<button
+												type="button"
+												class="pager-btn pager-num"
+												data-pager="num"
+												data-page={n - 1}
+												aria-current={n === 1 ? 'page' : undefined}
+											>
+												{n}
+											</button>
+										))}
+									</span>
+									<button type="button" class="pager-btn" data-pager="next" aria-label="Next page">
+										Next <Icon name="chevron-right" size={12} />
+									</button>
+									<span class="pager-info" data-pager-info>Page 1 of {totalPages}</span>
+								</nav>
+							)}
+						</div>
+					)}
+				</div>
+			</section>
+
+			{/* ---------- EXPERIENCE ---------- */}
+			<section id="experience" class="rbox">
+				<div class="rbox-bar">
+					<span class="rbox-ico"><Icon name="briefcase" size={15} /></span>
+					<span>Work Experience</span>
+				</div>
+				<div class="rbox-body">
+					{experiences.length === 0 && <p class="empty-note">No work experience yet.</p>}
+					<ul class="exp-list">
+						{experiences.map((e) => (
+							<li class="exp-item">
+								<div class="exp-date">
+									{formatMonthYear(e.startDate)}
+									{' – '}
+									{e.current ? <span class="now">Present</span> : formatMonthYear(e.endDate)}
+								</div>
+								<div class="exp-main">
+									<h3>
+										{e.position} <span class="at">@ {e.company}</span>
+									</h3>
+									{e.location && (
+										<div class="loc">
+											<Icon name="map-pin" size={11} /> {e.location}
+										</div>
+									)}
+									{e.summary && <p>{e.summary}</p>}
+									{e.tags && e.tags.length > 0 && (
+										<ul class="exp-tags">
+											{e.tags.map((t) => <li>{t}</li>)}
+										</ul>
+									)}
+								</div>
+							</li>
+						))}
+					</ul>
+				</div>
+			</section>
+
+			{/* ---------- CONTACT / GUESTBOOK ---------- */}
+			<section id="contact" class="rbox">
+				<div class="rbox-bar">
+					<span class="rbox-ico"><Icon name="mail" size={15} /></span>
+					<span>Guestbook &amp; Contact</span>
+				</div>
+				<div class="rbox-body">
+					<p>Want to work together or just say hello? Drop a message anytime.</p>
+					<div class="guestbook-actions">
+						{profile?.email && (
+							<a class="xbtn" href={`mailto:${profile.email}?subject=Hello ${nick}!`}>
+								<Icon name="pen-line" size={14} /> Send a message
+							</a>
+						)}
+						{profile?.socials && profile.socials.length > 0 && (
+							<div class="social-links">
+								{profile.socials.map((s) => (
+									<a href={s.url ?? '#'} target="_blank" rel="noreferrer">
+										<Icon name={socialIcon(s.label)} size={14} /> {s.label}
+									</a>
+								))}
+							</div>
+						)}
+					</div>
+					{profile?.email && (
+						<p class="email-big">
+							email : <a href={`mailto:${profile.email}`}>{profile.email}</a>
+						</p>
+					)}
+				</div>
+			</section>
+
+			{/* ---------- footer ---------- */}
+			<footer class="footer">
+				<p class="footer-copy">
+					&copy; 2002–{year} {name} ({nick}) — Powered by Astro + Sanity
+				</p>
+				<p class="footer-copy">
+					<a class="to-top" href="#top">
+						<Icon name="arrow-up" size={12} /> Back to top
+					</a>
+				</p>
+			</footer>
+		</div>
+	</body>
+</html>
+
+<script>
+	// Retro pager for the Projects section
+	const wrap = document.querySelector('.proj-pager-wrap');
+	if (wrap) {
+		const pages = Array.from(wrap.querySelectorAll('.proj-page'));
+		const info = wrap.querySelector('[data-pager-info]');
+		let current = 0;
+
+		const show = (i) => {
+			current = Math.max(0, Math.min(pages.length - 1, i));
+			pages.forEach((pg, idx) => {
+				pg.style.display = idx === current ? 'block' : 'none';
+			});
+			wrap.querySelectorAll('.pager-num').forEach((btn, idx) => {
+				if (idx === current) {
+					btn.setAttribute('aria-current', 'page');
+					btn.classList.add('pager-current');
+				} else {
+					btn.removeAttribute('aria-current');
+					btn.classList.remove('pager-current');
+				}
+			});
+			const prev = wrap.querySelector('[data-pager="prev"]');
+			const next = wrap.querySelector('[data-pager="next"]');
+			if (prev) prev.disabled = current === 0;
+			if (next) next.disabled = current === pages.length - 1;
+			if (info) info.textContent = `Page ${current + 1} of ${pages.length}`;
+		};
+
+		wrap.addEventListener('click', (event) => {
+			const btn = event.target.closest('[data-pager]');
+			if (!btn) return;
+			const action = btn.dataset.pager;
+			if (action === 'prev') show(current - 1);
+			else if (action === 'next') show(current + 1);
+			else if (action === 'num') show(Number(btn.dataset.page) || 0);
+		});
+
+		show(0);
+	}
+</script>

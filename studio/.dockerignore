@@ -1,0 +1,10 @@
+node_modules
+dist
+.sanity
+.git
+.env
+.env.*
+*.local
+Dockerfile
+.dockerignore
+scripts/assets

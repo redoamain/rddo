@@ -1,0 +1,38 @@
+# rddo — company profile site (Astro web) + Sanity Studio
+#
+#   docker compose up -d --build
+#
+#   - web:    http://localhost:8080   (nginx serving the static Astro build)
+#   - studio: http://localhost:3333   (Sanity Studio)
+#
+# The Astro site is built as a static site: Sanity content is fetched
+# DURING `docker build` (not at runtime).
+
+name: rddo
+
+services:
+  web:
+    build:
+      context: ./web
+      args:
+        # Public project values — overridable via env/--build-arg
+        PUBLIC_SANITY_PROJECT_ID: ${PUBLIC_SANITY_PROJECT_ID:-l9ie13zf}
+        PUBLIC_SANITY_DATASET: ${PUBLIC_SANITY_DATASET:-production}
+    image: rddo-web:latest
+    container_name: rddo-web
+    ports:
+      - "${WEB_PORT:-8090}:80"
+    restart: unless-stopped
+
+  studio:
+    build:
+      context: ./studio
+    image: rddo-studio:latest
+    container_name: rddo-studio
+    ports:
+      - "${STUDIO_PORT:-3333}:3333"
+    environment:
+      # Optional: lets the studio CLI talk to the project without a browser login.
+      # Get it from: npx sanity login  (or manage → API)
+      SANITY_AUTH_TOKEN: ${SANITY_AUTH_TOKEN:-}
+    restart: unless-stopped
