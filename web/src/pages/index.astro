@@ -24,9 +24,11 @@ const year = new Date().getFullYear();
 const visitorNo = String(
 	(1337 + [...name + nick + role].reduce((sum, c) => sum + c.charCodeAt(0), 0)) % 100000,
 ).padStart(6, '0');
+// Fallback saat /api/visits belum tersedia (mis. astro dev lokal).
+// Di production (Vercel), angka ini langsung diganti hasil fetch real-time.
 
 // --- projects pagination ---
-const PROJECTS_PER_PAGE = 2; // tweak this to taste
+const PROJECTS_PER_PAGE = 2;
 const projectPages: { items: typeof projects }[] = [];
 for (let i = 0; i < projects.length; i += PROJECTS_PER_PAGE) {
 	projectPages.push({ items: projects.slice(i, i + PROJECTS_PER_PAGE) });
@@ -50,7 +52,7 @@ const socialIcon = (label: string | null | undefined): string => {
 <html lang="en">
 	<head>
 		<meta charset="utf-8" />
-		<meta name="viewport" content="width=device-width" />
+		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
 		<link rel="icon" type="image/svg+xml" href="/favicon.svg" />
 		<meta name="generator" content={Astro.generator} />
 		<meta
@@ -61,59 +63,80 @@ const socialIcon = (label: string | null | undefined): string => {
 		<title>{`${name} (${nick}) — Homepage`}</title>
 	</head>
 
-	<body id="top">
+	<body>
 		<div class="win">
 			{/* ---------- window title bar ---------- */}
 			<div class="win-titlebar">
 				<span class="win-icon" aria-hidden="true"></span>
-				<span>{name} — Homepage</span>
+				<span>{nick} — Homepage</span>
 			</div>
 
 			{/* ---------- marquee ---------- */}
 			<div class="marquee" aria-hidden="true">
 				<div class="marquee-track">
-					<span>Welcome to {nick}'s homepage — browse the projects &amp; get in touch!</span>
-					<span>Welcome to {nick}'s homepage — browse the projects &amp; get in touch!</span>
+					<span>✦ Welcome to {nick}'s homepage ✦ </span>
+					<span>✦ Welcome to {nick}'s homepage ✦ </span>
+					<span>✦ Welcome to {nick}'s homepage ✦ </span>
+					<span>✦ Welcome to {nick}'s homepage ✦ </span>
 				</div>
 			</div>
 
-			{/* ---------- hero ---------- */}
-			<header class="hero">
-				{
-					profile?.avatar?.asset ? (
-						<div class="avatar-wrap">
-							<img
-								src={imageUrl(profile.avatar, 260) ?? ''}
-								alt={`Photo of ${name}`}
-								class="avatar-frame"
-								width="260"
-								height="260"
-							/>
-						</div>
-					) : (
-						<div class="no-photo">{name.slice(0, 1)}</div>
-					)
-				}
-				<h1>{name}</h1>
-				<p class="aka">
-					a.k.a. <b>{nick}</b> — {role}
-				</p>
-				{profile?.tagline && <p class="tagline">{profile.tagline}</p>}
+		{/* ---------- hero ---------- */}
+<header class="hero">
+	{
+		profile?.avatar?.asset ? (
+			<div class="avatar-wrap">
+				<img
+					src={imageUrl(profile.avatar, 260) ?? ''}
+					alt={`Photo of ${name}`}
+					class="avatar-frame"
+					width="130"
+					height="130"
+				/>
+			</div>
+		) : (
+			<div class="no-photo">{name.slice(0, 1)}</div>
+		)
+	}
+	<h1>{name}</h1>
+	<p class="aka">
+		a.k.a. <b>{nick}</b> — {role}
+	</p>
+	{profile?.tagline && <p class="tagline">{profile.tagline}</p>}
 
-				<div class="counter-line">
-					<span>You are visitor number</span>
-					<span class="counter" aria-label={`Visitor number ${visitorNo}`}>
-						{visitorNo.split('').map((d) => <i>{d}</i>)}
-					</span>
-				</div>
-			</header>
+{/* Visitor Counter dengan efek rolling */}
+{/* Visitor counter dengan tema monochrome */}
+<div class="counter-line">
+	<span>You are visitor number</span>
+	<div class="counter" id="visitorCounter" aria-label={`Visitor number ${visitorNo}`}>
+		{visitorNo.split('').map((d) => (
+			<i>{d}</i>
+		))}
+	</div>
+</div>
 
-			{/* ---------- menu ---------- */}
+	{/* Tambahan counter style LCD (opsional) */}
+	{/* <div class="counter-line">
+		<span>👤 Visitor #</span>
+		<div class="counter-lcd">
+			{visitorNo.split('').map((d, index) => (
+				<i key={index}>{d}</i>
+			))}
+		</div>
+	</div> */}
+</header>
+			{/* ---------- menu dengan hamburger untuk mobile ---------- */}
 			<nav class="menu" aria-label="Main menu">
-				<a href="#about"><Icon name="user" size={13} /> About</a>
-				<a href="#projects"><Icon name="folder" size={13} /> Projects</a>
-				<a href="#experience"><Icon name="briefcase" size={13} /> Experience</a>
-				<a href="#contact"><Icon name="mail" size={13} /> Contact</a>
+				<button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
+					<span class="menu-toggle-icon">☰</span>
+					<span class="menu-toggle-text">Menu</span>
+				</button>
+				<ul class="menu-list" id="menuList">
+					<li><a href="#about"><Icon name="user" size={13} /> About</a></li>
+					<li><a href="#projects"><Icon name="folder" size={13} /> Projects</a></li>
+					<li><a href="#experience"><Icon name="briefcase" size={13} /> Experience</a></li>
+					<li><a href="#contact"><Icon name="mail" size={13} /> Contact</a></li>
+				</ul>
 			</nav>
 
 			{/* ---------- ABOUT ---------- */}
@@ -312,12 +335,35 @@ const socialIcon = (label: string | null | undefined): string => {
 						<Icon name="arrow-up" size={12} /> Back to top
 					</a>
 				</p>
+				<p class="footer-copy" style="font-size: 11px; opacity: 0.7; margin-top: 6px;">
+					Best viewed with Netscape Navigator 4.0 or Internet Explorer 5.0
+				</p>
 			</footer>
 		</div>
 	</body>
 </html>
 
 <script>
+	// Mobile menu toggle
+	const menuToggle = document.getElementById('menuToggle');
+	const menuList = document.getElementById('menuList');
+
+	if (menuToggle && menuList) {
+		menuToggle.addEventListener('click', () => {
+			const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
+			menuToggle.setAttribute('aria-expanded', !isExpanded);
+			menuList.classList.toggle('menu-open');
+		});
+
+		// Close menu when a link is clicked (on mobile)
+		menuList.querySelectorAll('a').forEach(link => {
+			link.addEventListener('click', () => {
+				menuToggle.setAttribute('aria-expanded', 'false');
+				menuList.classList.remove('menu-open');
+			});
+		});
+	}
+
 	// Retro pager for the Projects section
 	const wrap = document.querySelector('.proj-pager-wrap');
 	if (wrap) {
@@ -357,4 +403,31 @@ const socialIcon = (label: string | null | undefined): string => {
 
 		show(0);
 	}
+
+	// Real visitor counter — tiap page load / refresh = +1.
+	// GET /api/visits (Vercel Function) increment atomik di Sanity `siteStats`.
+	// Gagal (mis. astro dev lokal tanpa function) → biarkan angka fallback.
+	(async () => {
+		const el = document.getElementById('visitorCounter');
+		if (!el) return;
+		try {
+			const res = await fetch('/api/visits', { cache: 'no-store' });
+			if (!res.ok) return;
+			const { visits } = await res.json();
+			if (typeof visits !== 'number') return;
+			const digits = String(Math.max(0, visits)).padStart(6, '0').split('');
+			el.setAttribute('aria-label', `Visitor number ${digits.join('')}`);
+			el.innerHTML = '';
+			digits.forEach((d, i) => {
+				const cell = document.createElement('i');
+				// Digit "berjatuhan" satu per satu ala rolling counter retro.
+				setTimeout(() => {
+					cell.textContent = d;
+					el.appendChild(cell);
+				}, 90 * i);
+			});
+		} catch {
+			/* abaikan — tampilkan fallback */
+		}
+	})();
 </script>

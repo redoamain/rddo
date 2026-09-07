@@ -38,11 +38,26 @@ Langkah di dashboard Vercel:
    - Output Directory: `dist`
    - Install Command: `bun install` (otomatis karena ada `bun.lock`)
 4. **Environment Variables** (Production + Preview):
-   | Key | Value |
-   | --- | ----- |
-   | `PUBLIC_SANITY_PROJECT_ID` | `l9ie13zf` |
-   | `PUBLIC_SANITY_DATASET` | `production` |
+   | Key | Value | Keterangan |
+   | --- | ----- | ---------- |
+   | `PUBLIC_SANITY_PROJECT_ID` | `l9ie13zf` | publik, aman ke browser |
+   | `PUBLIC_SANITY_DATASET` | `production` | publik, aman ke browser |
+   | `SANITY_API_TOKEN` | `sk...` | **server-only** (tanpa prefix `PUBLIC_`), dipakai Vercel Function `api/visits.js` untuk visitor counter. Buat di manage.sanity.io → project `l9ie13zf` → **API → Tokens** (role **Editor**). Jangan pernah pakai prefix `PUBLIC_` agar tidak terbundle ke browser. |
 5. **Deploy.** Setiap `git push` ke `main` otomatis redeploy.
+
+### Visitor counter real (tiap refresh +1)
+
+Counter "You are visitor number" bukan lagi angka statis: tiap page load /
+refresh, browser memanggil `GET /api/visits` (Vercel Function di `web/api/`),
+yang menambah `visits` +1 secara atomik di dokumen Sanity `siteStats`
+(dibuat otomatis saat hit pertama) lalu mengembalikan totalnya.
+
+- Tanpa `SANITY_API_TOKEN`, endpoint mengembalikan 500 dan halaman tetap
+  menampilkan angka fallback (tidak merusak tampilan).
+- `astro dev` lokal tidak menjalankan Vercel Function, jadi di lokal selalu
+  tampil angka fallback — angka real hanya terlihat di deployment Vercel
+  (atau via `vercel dev`).
+- Reset counter: ubah field `visits` di dokumen `Statistik Situs` lewat Studio.
 
 ### Rebuild otomatis saat konten Sanity berubah (wajib untuk static site)
 

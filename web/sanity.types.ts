@@ -21,6 +21,15 @@ export type SocialLink = {
   url?: string;
 };
 
+export type SiteStats = {
+  _id: string;
+  _type: "siteStats";
+  _createdAt: string;
+  _updatedAt: string;
+  _rev: string;
+  visits?: number;
+};
+
 export type Experience = {
   _id: string;
   _type: "experience";
@@ -267,6 +276,7 @@ export type Geopoint = {
 
 export type AllSanitySchemaTypes =
   | SocialLink
+  | SiteStats
   | Experience
   | Skill
   | SanityImageAssetReference
