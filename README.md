@@ -12,13 +12,14 @@ rddo/
 
 Detail setup & skrip masing-masing ada di `web/README.md` dan `studio/README.md`.
 
-## Deploy (Vercel + Sanity hosting)
+## Deploy (Vercel)
 
 Lihat panduan lengkap di [`DEPLOY.md`](./DEPLOY.md):
 
-- `web/` → Vercel (Root Directory `web`, env `PUBLIC_SANITY_PROJECT_ID` +
-  `PUBLIC_SANITY_DATASET`, plus Deploy Hook untuk rebuild otomatis).
-- `studio/` → Sanity hosting via `cd studio && bun run deploy`.
+- `web/` → Vercel Project `rddo-web` (Root Directory `web`, env
+  `PUBLIC_SANITY_PROJECT_ID` + `PUBLIC_SANITY_DATASET` + server-only
+  `SANITY_API_TOKEN` untuk visitor counter, plus Deploy Hook untuk rebuild otomatis).
+- `studio/` → Vercel Project `rddo-studio` (Root Directory `studio`).
 
 ## Jalankan dengan Docker (satu perintah)
 

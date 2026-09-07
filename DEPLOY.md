@@ -1,37 +1,34 @@
-# Deploy rddo — Web ke Vercel, Studio ke Sanity hosting
+# Deploy rddo ke Vercel — Web (Astro) + Studio (Sanity)
 
-Monorepo ini berisi dua app independen:
+Monorepo ini berisi dua app independen, masing-masing jadi **1 Vercel Project**:
 
 ```
 rddo/
-├── web/      # Astro static site → deploy ke Vercel
-└── studio/   # Sanity Studio   → deploy ke Sanity hosting (`sanity deploy`)
+├── web/      # Astro static site + Function api/visits → Vercel Project #1
+└── studio/   # Sanity Studio (Vite SPA)                  → Vercel Project #2
 ```
 
-## 0. Push repo gabungan ke GitHub
+## 0. Push repo ke GitHub
 
-Repo ini sudah 1 git di root (`main`). Remote: `origin → https://github.com/redoamain/rddo.git`.
+Vercel deploy dari GitHub, jadi semua file harus ter-commit + ter-push:
 
 ```bash
 cd /home/user/Documents/project/rddo
 git add -A
-git commit -m "chore: monorepo web + studio, deploy Vercel + Sanity hosting"
-git remote add origin https://github.com/redoamain/rddo.git  # jika belum ada
-git push -u origin main
+git status --short          # pastikan web/api/visits.js & studio/vercel.json ikut
+git commit -m "chore: deploy web + studio ke Vercel"
+git push origin main
 ```
 
-## 1. Deploy web (Astro) ke Vercel
+## 1. Deploy web (Astro) ke Vercel — Project #1
 
-`web/` adalah **static site** — konten Sanity di-fetch saat `bun run build`.
-Tidak perlu adapter tambahan. `web/vercel.json` sudah berisi:
-
-- Build command: `bun run build`
-- Output directory: `dist`
-- Framework: `astro`
+`web/vercel.json` sudah berisi build `bun run build`, output `dist`,
+framework `astro`. Folder `web/api/` otomatis jadi Serverless Functions
+(`web/api/visits.js` → `GET /api/visits`).
 
 Langkah di dashboard Vercel:
 
-1. **Add New → Project → Import** repo `redoamain/rddo`.
+1. **Add New → Project → Import** repo `redoamain/rddo` (beri nama mis. `rddo-web`).
 2. **Root Directory = `web`** (penting — jangan deploy dari root).
 3. Framework preset otomatis terdeteksi `Astro`. Pastikan:
    - Build Command: `bun run build`
@@ -44,6 +41,28 @@ Langkah di dashboard Vercel:
    | `PUBLIC_SANITY_DATASET` | `production` | publik, aman ke browser |
    | `SANITY_API_TOKEN` | `sk...` | **server-only** (tanpa prefix `PUBLIC_`), dipakai Vercel Function `api/visits.js` untuk visitor counter. Buat di manage.sanity.io → project `l9ie13zf` → **API → Tokens** (role **Editor**). Jangan pernah pakai prefix `PUBLIC_` agar tidak terbundle ke browser. |
 5. **Deploy.** Setiap `git push` ke `main` otomatis redeploy.
+   ⚠️ Setiap **ubah/tambah env var wajib Redeploy** (Deployments → ⋯ → Redeploy)
+   agar function ikut restart dengan env baru.
+
+## 2. Deploy Studio (Sanity) ke Vercel — Project #2
+
+`studio/vercel.json` sudah berisi build `bun run build` (`sanity build` →
+`dist/`) + rewrite SPA fallback ke `index.html` agar routing Studio tidak 404.
+
+Langkah di dashboard Vercel:
+
+1. **Add New → Project → Import** repo `redoamain/rddo` **lagi**
+   (satu repo bisa dipakai banyak project — beri nama mis. `rddo-studio`).
+2. **Root Directory = `studio`**.
+3. Framework preset pilih **Other** (atau Vite). Pastikan:
+   - Build Command: `bun run build`
+   - Output Directory: `dist`
+   - Install Command: `bun install`
+4. Tidak perlu env var (projectId/dataset sudah hardcoded di `sanity.config.ts`).
+5. **Deploy.** Hasilnya mis. `https://rddo-studio.vercel.app`.
+
+> Alternatif: `cd studio && bun run deploy` (Sanity hosting,
+> `https://<nama>.sanity.studio`). Tidak wajib kalau Studio sudah di Vercel.
 
 ### Visitor counter real (tiap refresh +1)
 
@@ -74,7 +93,9 @@ otomatis membangun ulang web:
    - Method: POST
 3. Uji: ubah konten di Studio → Publish → web ter-rebuild otomatis.
 
-## 2. Deploy Studio ke Sanity hosting
+## 3. Deploy Studio ke Sanity hosting (opsional)
+
+Kalau Studio sudah jalan di Vercel (bagian 2), bagian ini boleh dilewati.
 
 Butuh akun dengan akses ke project `l9ie13zf`.
 
@@ -104,15 +125,51 @@ Jika ada fetch client-side ke Sanity API, daftarkan domain Vercel di:
   - `https://<project-web>.vercel.app`
   - domain custom (jika ada)
 
-## 3. Ringkasan service
+## 4. Ringkasan service
 
-| App | Hosting | Deploy | URL contoh |
-| --- | ------- | ------ | ---------- |
-| `web` | Vercel (Root Dir `web`) | otomatis tiap push + Deploy Hook | `https://rddo-web.vercel.app` |
-| `studio` | Sanity hosting | `cd studio && bun run deploy` | `https://rddo.sanity.studio` |
+| App | Vercel Project | Root Directory | Deploy | URL contoh |
+| --- | -------------- | -------------- | ------ | ---------- |
+| `web` | `rddo-web` | `web` | otomatis tiap push + Deploy Hook | `https://rddo-web.vercel.app` |
+| `studio` | `rddo-studio` | `studio` | otomatis tiap push | `https://rddo-studio.vercel.app` |
 
-## 4. Catatan Docker
+## 5. Troubleshooting (kalau hanya Astro yang jalan)
+
+### A. Counter visitor tidak bertambah / angka tidak berubah
+
+Tes langsung endpoint-nya di browser:
+
+```
+https://<domain-web-kamu>/api/visits
+```
+
+| Hasil | Artinya | Perbaikan |
+| ----- | ------- | --------- |
+| `{"visits": N}` dan N bertambah tiap refresh | ✅ Function OK | — |
+| `404` | Function tidak ter-deploy (umumnya Root Directory bukan `web`, atau file belum ter-push) | Pastikan Vercel → Settings → General → Root Directory = `web`; pastikan `web/api/visits.js` ada di GitHub; Redeploy |
+| `500` + `...belum dikonfigurasi` | `SANITY_API_TOKEN` / `PUBLIC_SANITY_PROJECT_ID` belum diset | Tambah env di Vercel → Settings → Environment Variables (Production), lalu **Redeploy** |
+| `502` + `stage: "mutate"`, `upstreamStatus: 401/403` | Token salah / role bukan Editor | Buat token baru role **Editor** di manage.sanity.io → API → Tokens, update env, Redeploy |
+| `502` + `stage` lain | Sanity API gangguan / projectId/dataset salah | Cek `PUBLIC_SANITY_PROJECT_ID` dan `PUBLIC_SANITY_DATASET` |
+
+Catatan: halaman tetap tampil normal saat API error (counter memakai angka
+fallback) — jadi "web jalan tapi counter mati" = salah satu baris di atas.
+
+### B. Deploy project Studio gagal di Vercel
+
+- Pastikan ini project **terpisah** dengan Root Directory = `studio`
+  (bukan satu project dengan root repo).
+- Build Command `bun run build`, Output Directory `dist`.
+- Error `sanity: command not found` → Install Command belum jalan / `bun.lock`
+  tidak terbaca: set Install Command = `bun install` secara eksplisit.
+- Halaman Studio 404 saat navigasi dalam (mis. refresh di `/structure/...`)
+  → pastikan `studio/vercel.json` (rewrite ke `/index.html`) ter-push.
+
+### C. Konten Sanity baru tidak muncul di web
+
+`web` adalah static site (konten di-fetch saat build). Ikuti
+"Rebuild otomatis saat konten Sanity berubah" di bagian 1 di atas
+(Deploy Hook Vercel + webhook Sanity).
+
+## 6. Catatan Docker
 
 `docker-compose.yml` di root tetap ada untuk jalan lokal
-(`docker compose up -d --build`), tapi **tidak dipakai** untuk deploy
-Vercel + Sanity hosting.
+(`docker compose up -d --build`), tapi **tidak dipakai** untuk deploy Vercel.

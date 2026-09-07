@@ -40,6 +40,7 @@ export default async function handler(req, res) {
 
 	try {
 		// 1) Pastikan dokumen ada, lalu tambah 1 secara atomik (satu transaksi).
+		let stage = 'mutate';
 		const mutateRes = await fetch(`${base}/mutate/${dataset}?returnDocuments=true`, {
 			method: 'POST',
 			headers,
@@ -51,16 +52,21 @@ export default async function handler(req, res) {
 			}),
 		});
 		if (!mutateRes.ok) {
-			const detail = await mutateRes.text();
-			throw new Error(`Sanity mutate gagal (${mutateRes.status}): ${detail}`);
+			const err = new Error(`Sanity mutate gagal (${mutateRes.status})`);
+			err.stage = stage;
+			err.upstreamStatus = mutateRes.status;
+			throw err;
 		}
 
 		// 2) Baca total terbaru.
+		stage = 'query';
 		const query = encodeURIComponent(`*[_id == "${DOC_ID}"][0]{visits}`);
 		const queryRes = await fetch(`${base}/query/${dataset}?query=${query}`, { headers });
 		if (!queryRes.ok) {
-			const detail = await queryRes.text();
-			throw new Error(`Sanity query gagal (${queryRes.status}): ${detail}`);
+			const err = new Error(`Sanity query gagal (${queryRes.status})`);
+			err.stage = stage;
+			err.upstreamStatus = queryRes.status;
+			throw err;
 		}
 		const { result } = await queryRes.json();
 
@@ -68,6 +74,13 @@ export default async function handler(req, res) {
 		return res.status(200).json({ visits: result?.visits ?? 0 });
 	} catch (err) {
 		console.error('[api/visits]', err);
-		return res.status(502).json({ error: 'Gagal membaca penghitung kunjungan.' });
+		// stage + upstreamStatus disengaja diekspos agar mudah didiagnosis
+		// dari browser tanpa buka Function Logs (tidak memuat token/rahasia).
+		// 401/403 saat mutate = token salah / role bukan Editor.
+		return res.status(502).json({
+			error: 'Gagal membaca penghitung kunjungan.',
+			stage: err.stage ?? 'unknown',
+			upstreamStatus: err.upstreamStatus ?? null,
+		});
 	}
 }
