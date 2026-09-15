@@ -87,7 +87,7 @@ const getDomain = (url: string | null | undefined) => {
 
 	<body>
 		<div class="site-viewport">
-			<!-- Header / Top Bar Navigation -->
+			<!-- Header / Top Navigation -->
 			<header class="top-nav">
 				<div class="nav-wrapper">
 					<a href="#profile" class="brand" data-nav-index="0" title="Go to Profile">
@@ -107,24 +107,19 @@ const getDomain = (url: string | null | undefined) => {
 					<div class="nav-controls">
 						<nav class="nav-menu" id="mainNavMenu" aria-label="Page Sections">
 							<button type="button" class="nav-anchor active" data-nav-index="0" data-nav-target="profile">
-								<span class="nav-num">01</span>
-								<span class="nav-label">Profile</span>
+								Profile
 							</button>
 							<button type="button" class="nav-anchor" data-nav-index="1" data-nav-target="projects">
-								<span class="nav-num">02</span>
-								<span class="nav-label">Works</span>
+								Works
 							</button>
 							<button type="button" class="nav-anchor" data-nav-index="2" data-nav-target="experience">
-								<span class="nav-num">03</span>
-								<span class="nav-label">Experience</span>
+								Experience
 							</button>
 							<button type="button" class="nav-anchor" data-nav-index="3" data-nav-target="about">
-								<span class="nav-num">04</span>
-								<span class="nav-label">About</span>
+								About
 							</button>
 							<button type="button" class="nav-anchor" data-nav-index="4" data-nav-target="contact">
-								<span class="nav-num">05</span>
-								<span class="nav-label">Contact</span>
+								Contact
 							</button>
 						</nav>
 
@@ -149,13 +144,10 @@ const getDomain = (url: string | null | undefined) => {
 					<!-- Panel 01: Profile -->
 					<section id="profile" class="horizontal-panel" data-panel-index="0" data-panel-title="Profile">
 						<div class="panel-inner">
-							<div class="panel-kicker-bar">
-								<span class="panel-kicker">01 / 05 · PROFILE &amp; STATEMENT</span>
-							</div>
-
 							<div class="editorial-hero">
 								<div class="hero-split">
 									<div class="hero-statement">
+										<span class="section-kicker">PROFILE · BACKEND ENGINEER</span>
 										<h1 class="statement-headline">
 											{profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}
 										</h1>
@@ -184,7 +176,7 @@ const getDomain = (url: string | null | undefined) => {
 												</a>
 											))}
 											<button type="button" class="hero-action-next" data-nav-index="1">
-												<span>Explore Works (02) →</span>
+												<span>View Works →</span>
 											</button>
 										</div>
 									</div>
@@ -213,16 +205,15 @@ const getDomain = (url: string | null | undefined) => {
 					<!-- Panel 02: Selected Works -->
 					<section id="projects" class="horizontal-panel" data-panel-index="1" data-panel-title="Works">
 						<div class="panel-inner">
-							<div class="panel-kicker-bar">
-								<span class="panel-kicker">02 / 05 · SELECTED WORKS</span>
-							</div>
-
 							<div class="editorial-section works-section-wrap">
 								<div class="section-topbar">
 									<div class="topbar-header-row">
 										<div class="topbar-left">
-											<h2 class="section-title">Selected Works</h2>
-											<span class="section-count">({projects.length})</span>
+											<span class="section-kicker">SELECTED WORKS</span>
+											<div class="title-with-count">
+												<h2 class="section-title">Projects &amp; Systems</h2>
+												<span class="section-count">({projects.length})</span>
+											</div>
 										</div>
 
 										<div class="topbar-controls">
@@ -335,7 +326,7 @@ const getDomain = (url: string | null | undefined) => {
 											</div>
 
 											<div class="work-card-preview">
-												<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`View overview for ${p.title}`}>
+												<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`Click to view overview for ${p.title}`}>
 													<div class="browser-bar">
 														<div class="browser-dots">
 															<span class="browser-dot"></span>
@@ -464,12 +455,9 @@ const getDomain = (url: string | null | undefined) => {
 					<!-- Panel 03: Experience & Roles -->
 					<section id="experience" class="horizontal-panel" data-panel-index="2" data-panel-title="Experience">
 						<div class="panel-inner">
-							<div class="panel-kicker-bar">
-								<span class="panel-kicker">03 / 05 · CAREER &amp; EXPERIENCE</span>
-							</div>
-
 							<div class="editorial-section">
 								<div class="section-topbar">
+									<span class="section-kicker">CAREER &amp; EXPERIENCE</span>
 									<h2 class="section-title">Experience &amp; Roles</h2>
 								</div>
 
@@ -508,12 +496,9 @@ const getDomain = (url: string | null | undefined) => {
 					<!-- Panel 04: Technical Architecture & Stack -->
 					<section id="about" class="horizontal-panel" data-panel-index="3" data-panel-title="About">
 						<div class="panel-inner">
-							<div class="panel-kicker-bar">
-								<span class="panel-kicker">04 / 05 · TECHNICAL ARCHITECTURE &amp; STACK</span>
-							</div>
-
 							<div class="editorial-section">
 								<div class="section-topbar">
+									<span class="section-kicker">TECHNICAL CAPABILITIES</span>
 									<h2 class="section-title">About &amp; Stack</h2>
 								</div>
 
@@ -579,12 +564,9 @@ const getDomain = (url: string | null | undefined) => {
 					<!-- Panel 05: Contact & Colophon -->
 					<section id="contact" class="horizontal-panel" data-panel-index="4" data-panel-title="Contact">
 						<div class="panel-inner">
-							<div class="panel-kicker-bar">
-								<span class="panel-kicker">05 / 05 · TRANSMISSION &amp; CONNECT</span>
-							</div>
-
 							<div class="editorial-section contact-section">
 								<div class="section-topbar">
+									<span class="section-kicker">TRANSMISSION &amp; CONNECT</span>
 									<h2 class="section-title">Get in Touch</h2>
 								</div>
 
@@ -646,63 +628,38 @@ const getDomain = (url: string | null | undefined) => {
 				</div>
 			</main>
 
-			<!-- Bottom Nav & Status Bar -->
-			<footer class="bottom-nav-bar">
-				<div class="bottom-nav-left">
-					<span class="panel-badge" id="currentPanelBadge">01 / 05</span>
-					<span class="panel-label" id="currentPanelLabel">PROFILE</span>
-				</div>
-				<div class="bottom-nav-center">
-					<div class="panel-dots" id="panelDots" role="tablist" aria-label="Section navigation">
-						<button type="button" class="panel-dot active" data-nav-index="0" aria-label="Section 1: Profile" role="tab" aria-selected="true"></button>
-						<button type="button" class="panel-dot" data-nav-index="1" aria-label="Section 2: Works" role="tab" aria-selected="false"></button>
-						<button type="button" class="panel-dot" data-nav-index="2" aria-label="Section 3: Experience" role="tab" aria-selected="false"></button>
-						<button type="button" class="panel-dot" data-nav-index="3" aria-label="Section 4: About" role="tab" aria-selected="false"></button>
-						<button type="button" class="panel-dot" data-nav-index="4" aria-label="Section 5: Contact" role="tab" aria-selected="false"></button>
-					</div>
-				</div>
-				<div class="bottom-nav-right">
-					<button type="button" id="prevPanelBtn" class="nav-step-btn" aria-label="Previous section" disabled>
-						<Icon name="chevron-left" size={13} />
-						<span>Prev</span>
-					</button>
-					<span class="nav-step-divider">|</span>
-					<button type="button" id="nextPanelBtn" class="nav-step-btn" aria-label="Next section">
-						<span>Next</span>
-						<Icon name="chevron-right" size={13} />
-					</button>
-				</div>
-			</footer>
-
-			<!-- Project Overview Modals (Positioned directly under body, centered in viewport) -->
+			<!-- Project Overview Modals (Dead-center in viewport) -->
 			{projects.map((p) => (
 				<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
 					<div class="dialog-inner">
-						<div class="dialog-top">
-							<div class="dialog-title-wrap">
-								<span class="dialog-kicker">Case Study · Project Overview</span>
-								<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
-							</div>
-							<div class="dialog-top-actions">
-								{p.liveUrl && (
-									<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="Visit Live Site">
-										<span>Live Site</span>
-										<Icon name="arrow-up-right" size={12} />
-									</a>
-								)}
-								{p.repoUrl && (
-									<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="View Source">
-										<span>Source</span>
-										<Icon name="arrow-up-right" size={12} />
-									</a>
-								)}
-								<button type="button" class="dialog-close" data-close-modal aria-label="Close overview" title="Close">
-									<Icon name="x" size={18} />
-								</button>
-							</div>
-						</div>
+						<button type="button" class="dialog-close-corner" data-close-modal aria-label="Close overview" title="Close (Esc)">
+							<Icon name="x" size={17} />
+						</button>
 
 						<div class="dialog-scroll">
+							<!-- Centered Header -->
+							<div class="dialog-header-center">
+								<span class="dialog-kicker">CASE STUDY · PROJECT OVERVIEW</span>
+								<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+								
+								<!-- Quick action links -->
+								<div class="dialog-quick-actions">
+									{p.liveUrl && (
+										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-pill-link">
+											<span>Visit Live Site</span>
+											<Icon name="arrow-up-right" size={12} />
+										</a>
+									)}
+									{p.repoUrl && (
+										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-pill-link">
+											<span>Source Repository</span>
+											<Icon name="arrow-up-right" size={12} />
+										</a>
+									)}
+								</div>
+							</div>
+
+							<!-- Centered Media Frame -->
 							{p.coverImage?.asset && (
 								<div class="dialog-media-frame">
 									<div class="browser-bar">
@@ -724,44 +681,46 @@ const getDomain = (url: string | null | undefined) => {
 								</div>
 							)}
 
+							<!-- Centered Summary Lead -->
 							{p.summary && (
-								<div class="dialog-summary-box">
-									<p class="dialog-lead">{p.summary}</p>
-								</div>
+								<p class="dialog-lead-centered">{p.summary}</p>
 							)}
 
+							<!-- Centered Tech Tags -->
 							{p.tags && p.tags.length > 0 && (
-								<div class="dialog-spec-row">
-									<span class="spec-label">Technologies:</span>
-									<div class="spec-pills">
-										{p.tags.map((t) => (
-											<span class="spec-tag">{t}</span>
-										))}
-									</div>
+								<div class="dialog-spec-centered">
+									{p.tags.map((t) => (
+										<span class="spec-tag">{t}</span>
+									))}
 								</div>
 							)}
 
+							<!-- Subtle Center Divider -->
+							<div class="dialog-divider"></div>
+
+							<!-- Centered Reading Column -->
 							{p.description && p.description.length > 0 && (
 								<div class="dialog-body-prose">
 									<PortableText value={p.description} />
 								</div>
 							)}
 
+							<!-- Centered Action Buttons -->
 							<div class="dialog-links-row">
 								{p.liveUrl && (
 									<a href={p.liveUrl} target="_blank" rel="noreferrer" class="button-solid">
-										<span>Visit Live Site</span>
-										<Icon name="arrow-up-right" size={14} />
+										<span>Open Live Application</span>
+										<Icon name="arrow-up-right" size={13} />
 									</a>
 								)}
 								{p.repoUrl && (
 									<a href={p.repoUrl} target="_blank" rel="noreferrer" class="button-outline">
-										<span>View Repository</span>
-										<Icon name="arrow-up-right" size={14} />
+										<span>View Source Code</span>
+										<Icon name="arrow-up-right" size={13} />
 									</a>
 								)}
 								<button type="button" class="button-ghost" data-close-modal>
-									Close Overview
+									Close
 								</button>
 							</div>
 						</div>
@@ -788,13 +747,6 @@ const getDomain = (url: string | null | undefined) => {
 	const panelsTrack = document.getElementById('panelsTrack') as HTMLElement | null;
 	const panels = document.querySelectorAll<HTMLElement>('.horizontal-panel');
 	const navAnchors = document.querySelectorAll<HTMLElement>('.nav-anchor[data-nav-index]');
-	const panelDots = document.querySelectorAll<HTMLElement>('.panel-dot[data-nav-index]');
-	const currentPanelBadge = document.getElementById('currentPanelBadge');
-	const currentPanelLabel = document.getElementById('currentPanelLabel');
-	const prevPanelBtn = document.getElementById('prevPanelBtn') as HTMLButtonElement | null;
-	const nextPanelBtn = document.getElementById('nextPanelBtn') as HTMLButtonElement | null;
-
-	const panelTitles = ['PROFILE', 'SELECTED WORKS', 'EXPERIENCE', 'CAPABILITIES', 'CONTACT'];
 	let currentPanelIndex = 0;
 	const totalPanels = panels.length;
 
@@ -820,30 +772,6 @@ const getDomain = (url: string | null | undefined) => {
 			}
 		});
 
-		// Update dots
-		panelDots.forEach((dot) => {
-			const idx = Number(dot.dataset.navIndex);
-			if (idx === index) {
-				dot.classList.add('active');
-				dot.setAttribute('aria-selected', 'true');
-			} else {
-				dot.classList.remove('active');
-				dot.setAttribute('aria-selected', 'false');
-			}
-		});
-
-		// Update bottom status bar
-		if (currentPanelBadge) {
-			currentPanelBadge.textContent = `0${index + 1} / 0${totalPanels}`;
-		}
-		if (currentPanelLabel) {
-			currentPanelLabel.textContent = panelTitles[index] || '';
-		}
-
-		// Update prev/next button states
-		if (prevPanelBtn) prevPanelBtn.disabled = index === 0;
-		if (nextPanelBtn) nextPanelBtn.disabled = index === totalPanels - 1;
-
 		// Update URL hash
 		const activePanel = panels[index];
 		if (activePanel && updateHash) {
@@ -857,7 +785,7 @@ const getDomain = (url: string | null | undefined) => {
 		activePanel?.scrollTo({ top: 0, behavior: 'instant' });
 	};
 
-	// Event listeners for menu anchors & dots
+	// Event listeners for menu anchors
 	navAnchors.forEach((btn) => {
 		btn.addEventListener('click', (e) => {
 			e.preventDefault();
@@ -866,28 +794,9 @@ const getDomain = (url: string | null | undefined) => {
 		});
 	});
 
-	panelDots.forEach((dot) => {
-		dot.addEventListener('click', () => {
-			const idx = Number(dot.dataset.navIndex);
-			goToPanel(idx);
-		});
-	});
-
-	if (prevPanelBtn) {
-		prevPanelBtn.addEventListener('click', () => {
-			goToPanel(currentPanelIndex - 1);
-		});
-	}
-
-	if (nextPanelBtn) {
-		nextPanelBtn.addEventListener('click', () => {
-			goToPanel(currentPanelIndex + 1);
-		});
-	}
-
 	// Buttons inside panels that navigate to specific panels
 	document.querySelectorAll<HTMLElement>('[data-nav-index]').forEach((el) => {
-		if (el.classList.contains('nav-anchor') || el.classList.contains('panel-dot')) return;
+		if (el.classList.contains('nav-anchor')) return;
 		el.addEventListener('click', (e) => {
 			e.preventDefault();
 			const idx = Number(el.dataset.navIndex);
@@ -1178,4 +1087,4 @@ const getDomain = (url: string | null | undefined) => {
 			/* fallback remains */
 		}
 	})();
-</script>\n
+</script>
