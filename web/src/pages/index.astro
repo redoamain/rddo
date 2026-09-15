@@ -26,18 +26,6 @@ const year = new Date().getFullYear();
 // Avatar URL directly from Sanity asset, falling back to local /avatar.jpg
 const avatarUrl = imageUrl(profile?.avatar, 440) ?? '/avatar.jpg';
 
-// Current roles derived from active experiences in Sanity Studio
-const currentRoles = experiences
-	.filter((e) => e.current)
-	.map((e) => e.company)
-	.filter(Boolean)
-	.join(' & ') || 'Harmoni Software House & PT CITI PLUMB';
-
-// Key specialties derived from Sanity Studio skills
-const specialties = skills.length > 0
-	? skills.slice(0, 5).map((s) => s.name).filter(Boolean).join(', ')
-	: 'Linux Servers, PostgreSQL, Docker, TypeScript';
-
 // Skill categories for the About & Skills section
 const skillCategories = [
 	{ key: 'backend', label: 'Backend' },
@@ -159,6 +147,21 @@ const getDomain = (url: string | null | undefined) => {
 								</p>
 							)}
 						</div>
+
+						<div class="hero-connect-row">
+							{profile?.email && (
+								<a href={`mailto:${profile.email}`} class="hero-cta-btn">
+									<Icon name="mail" size={14} />
+									<span>Email</span>
+								</a>
+							)}
+							{profile?.socials?.map((s) => (
+								<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="hero-social-link">
+									{s.label === 'GitHub' ? <Icon name="github" size={13} /> : s.label === 'LinkedIn' ? <Icon name="linkedin" size={13} /> : null}
+									<span>{s.label} ↗</span>
+								</a>
+							))}
+						</div>
 					</div>
 
 					<div class="hero-portrait">
@@ -175,30 +178,6 @@ const getDomain = (url: string | null | undefined) => {
 						<div class="portrait-meta">
 							<span class="portrait-name">{name}</span>
 							<span class="portrait-handle">@{nick.toLowerCase()}amain</span>
-						</div>
-					</div>
-				</div>
-
-				<div class="hero-meta-strip">
-					<div class="meta-item">
-						<span class="meta-label">CURRENT ROLES</span>
-						<span class="meta-val">{currentRoles}</span>
-					</div>
-					<div class="meta-item">
-						<span class="meta-label">SPECIALTY</span>
-						<span class="meta-val">{specialties}</span>
-					</div>
-					<div class="meta-item">
-						<span class="meta-label">CONNECT</span>
-						<div class="meta-links">
-							{profile?.email && (
-								<a href={`mailto:${profile.email}`} class="action-link">Email ↗</a>
-							)}
-							{profile?.socials?.map((s) => (
-								<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
-									{s.label} ↗
-								</a>
-							))}
 						</div>
 					</div>
 				</div>
@@ -323,7 +302,7 @@ const getDomain = (url: string | null | undefined) => {
 							</div>
 
 							<div class="work-card-preview">
-								<div class="browser-mockup">
+								<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`View overview for ${p.title}`}>
 									<div class="browser-bar">
 										<div class="browser-dots">
 											<span class="browser-dot"></span>
@@ -451,24 +430,56 @@ const getDomain = (url: string | null | undefined) => {
 					<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
 						<div class="dialog-inner">
 							<div class="dialog-top">
-								<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
-								<button type="button" class="dialog-close" data-close-modal aria-label="Close dialog">
-									<Icon name="x" size={18} />
-								</button>
+								<div class="dialog-title-wrap">
+									<span class="dialog-kicker">Case Study · Project Overview</span>
+									<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+								</div>
+								<div class="dialog-top-actions">
+									{p.liveUrl && (
+										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="Visit Live Site">
+											<span>Live Site</span>
+											<Icon name="arrow-up-right" size={12} />
+										</a>
+									)}
+									{p.repoUrl && (
+										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="View Source">
+											<span>Source</span>
+											<Icon name="arrow-up-right" size={12} />
+										</a>
+									)}
+									<button type="button" class="dialog-close" data-close-modal aria-label="Close overview" title="Close">
+										<Icon name="x" size={18} />
+									</button>
+								</div>
 							</div>
 
 							<div class="dialog-scroll">
 								{p.coverImage?.asset && (
 									<div class="dialog-media-frame">
-										<img
-											src={imageUrl(p.coverImage, 1100) ?? ''}
-											alt={p.title ?? 'Project full view'}
-											class="dialog-cover-img"
-										/>
+										<div class="browser-bar">
+											<div class="browser-dots">
+												<span class="browser-dot"></span>
+												<span class="browser-dot"></span>
+												<span class="browser-dot"></span>
+											</div>
+											<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
+										</div>
+										<div class="dialog-img-wrap">
+											<img
+												src={imageUrl(p.coverImage, 1200) ?? ''}
+												alt={p.title ?? 'Project full view'}
+												class="dialog-cover-img"
+												loading="lazy"
+											/>
+										</div>
 									</div>
 								)}
 
-								{p.summary && <p class="dialog-lead">{p.summary}</p>}
+								{p.summary && (
+									<div class="dialog-summary-box">
+										<p class="dialog-lead">{p.summary}</p>
+									</div>
+								)}
 
 								{p.tags && p.tags.length > 0 && (
 									<div class="dialog-spec-row">
@@ -501,7 +512,7 @@ const getDomain = (url: string | null | undefined) => {
 										</a>
 									)}
 									<button type="button" class="button-ghost" data-close-modal>
-										Close
+										Close Overview
 									</button>
 								</div>
 							</div>
