@@ -44,8 +44,6 @@ const allTags = Array.from(
 	new Set(projects.flatMap((p) => p.tags ?? []).filter(Boolean)),
 ).sort();
 
-const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
-
 const getDomain = (url: string | null | undefined) => {
 	if (!url) return 'system.internal';
 	try {
@@ -57,7 +55,7 @@ const getDomain = (url: string | null | undefined) => {
 ---
 
 <!DOCTYPE html>
-<html lang="en" class="scroll-smooth" data-theme="dark">
+<html lang="en" data-theme="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -88,221 +86,625 @@ const getDomain = (url: string | null | undefined) => {
 	</head>
 
 	<body>
-		<!-- Header / Editorial Top Bar -->
-		<header class="top-nav">
-			<div class="nav-wrapper">
-				<a href="#" class="brand">
-					<img
-						src={avatarUrl}
-						alt={`Avatar of ${name}`}
-						class="brand-avatar"
-						width="34"
-						height="34"
-					/>
-					<div class="brand-text">
-						<span class="brand-title">{name}</span>
-						<span class="brand-sub">{role} · {profile?.location ?? 'Surabaya, ID'}</span>
-					</div>
-				</a>
-
-				<div class="nav-controls">
-					<nav class="nav-menu" aria-label="Page Sections">
-						<a href="#projects" class="nav-anchor">Work</a>
-						<a href="#experience" class="nav-anchor">Experience</a>
-						<a href="#about" class="nav-anchor">About</a>
-						<a href="#contact" class="nav-anchor">Contact</a>
-					</nav>
-
-					<!-- Theme Switcher -->
-					<button
-						type="button"
-						id="themeToggle"
-						class="theme-toggle"
-						aria-label="Toggle dark / light theme"
-						title="Toggle theme"
-					>
-						<span class="theme-icon sun"><Icon name="sun" size={15} /></span>
-						<span class="theme-icon moon"><Icon name="moon" size={15} /></span>
-					</button>
-				</div>
-			</div>
-		</header>
-
-		<!-- Main Layout -->
-		<main class="page-body">
-			<!-- Hero / Editorial Statement -->
-			<section class="editorial-hero">
-				<div class="hero-split">
-					<div class="hero-statement">
-						<h1 class="statement-headline">
-							{profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}
-						</h1>
-						<div class="statement-sub">
-							{profile?.bio ? (
-								<PortableText value={profile.bio} />
-							) : (
-								<p>
-									I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
-									I specialize in scalable backend systems — from relational and NoSQL database design to RESTful APIs and data security.
-								</p>
-							)}
+		<div class="site-viewport">
+			<!-- Header / Top Bar Navigation -->
+			<header class="top-nav">
+				<div class="nav-wrapper">
+					<a href="#profile" class="brand" data-nav-index="0" title="Go to Profile">
+						<img
+							src={avatarUrl}
+							alt={`Avatar of ${name}`}
+							class="brand-avatar"
+							width="34"
+							height="34"
+						/>
+						<div class="brand-text">
+							<span class="brand-title">{name}</span>
+							<span class="brand-sub">{role} · {profile?.location ?? 'Surabaya, ID'}</span>
 						</div>
+					</a>
 
-						<div class="hero-connect-row">
-							{profile?.email && (
-								<a href={`mailto:${profile.email}`} class="hero-cta-btn">
-									<Icon name="mail" size={14} />
-									<span>Email</span>
-								</a>
-							)}
-							{profile?.socials?.map((s) => (
-								<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="hero-social-link">
-									{s.label === 'GitHub' ? <Icon name="github" size={13} /> : s.label === 'LinkedIn' ? <Icon name="linkedin" size={13} /> : null}
-									<span>{s.label} ↗</span>
-								</a>
-							))}
-						</div>
-					</div>
-
-					<div class="hero-portrait">
-						<div class="portrait-frame">
-							<img
-								src={avatarUrl}
-								alt={`Photo of ${name}`}
-								class="portrait-img"
-								width="200"
-								height="200"
-								loading="eager"
-							/>
-						</div>
-						<div class="portrait-meta">
-							<span class="portrait-name">{name}</span>
-							<span class="portrait-handle">@{nick.toLowerCase()}amain</span>
-						</div>
-					</div>
-				</div>
-			</section>
-
-			<!-- Selected Works Section -->
-			<section id="projects" class="editorial-section">
-				<div class="section-topbar">
-					<div class="topbar-header-row">
-						<div class="topbar-left">
-							<h2 class="section-title">Selected Works</h2>
-							<span class="section-count">({projects.length})</span>
-						</div>
-
-						<div class="topbar-controls">
-							<!-- Search Input -->
-							<div class="project-search-wrap">
-								<Icon name="search" size={13} />
-								<input
-									type="text"
-									id="projectSearch"
-									class="project-search-input"
-									placeholder="Search project or stack..."
-									aria-label="Search projects by title or technology"
-								/>
-							</div>
-
-							<!-- View Mode Toggle -->
-							<div class="view-toggle-group" role="group" aria-label="Project view mode">
-								<button
-									type="button"
-									id="btnViewShowcase"
-									class="view-btn active"
-									aria-pressed="true"
-									title="Showcase Cards View"
-								>
-									<Icon name="grid" size={13} />
-									<span>Showcase</span>
-								</button>
-								<button
-									type="button"
-									id="btnViewTable"
-									class="view-btn"
-									aria-pressed="false"
-									title="All Projects Table View"
-								>
-									<Icon name="list" size={13} />
-									<span>Index Table</span>
-								</button>
-							</div>
-						</div>
-					</div>
-
-					{/* Tag Filter Pills */}
-					{allTags.length > 0 && (
-						<div class="filter-capsules" role="tablist" aria-label="Filter works by technology">
-							<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
-								All
+					<div class="nav-controls">
+						<nav class="nav-menu" id="mainNavMenu" aria-label="Page Sections">
+							<button type="button" class="nav-anchor active" data-nav-index="0" data-nav-target="profile">
+								<span class="nav-num">01</span>
+								<span class="nav-label">Profile</span>
 							</button>
-							{allTags.map((tag) => (
-								<button type="button" class="filter-btn" data-filter={tag} aria-pressed="false">
-									{tag}
-								</button>
-							))}
-						</div>
-					)}
-				</div>
+							<button type="button" class="nav-anchor" data-nav-index="1" data-nav-target="projects">
+								<span class="nav-num">02</span>
+								<span class="nav-label">Works</span>
+							</button>
+							<button type="button" class="nav-anchor" data-nav-index="2" data-nav-target="experience">
+								<span class="nav-num">03</span>
+								<span class="nav-label">Experience</span>
+							</button>
+							<button type="button" class="nav-anchor" data-nav-index="3" data-nav-target="about">
+								<span class="nav-num">04</span>
+								<span class="nav-label">About</span>
+							</button>
+							<button type="button" class="nav-anchor" data-nav-index="4" data-nav-target="contact">
+								<span class="nav-num">05</span>
+								<span class="nav-label">Contact</span>
+							</button>
+						</nav>
 
-				<!-- 1. Editorial Showcase View -->
-				<div class="works-showcase-view" id="worksShowcase">
-					{projects.map((p, idx) => (
-						<article
-							class={`work-card ${idx >= 4 ? 'work-extra' : ''}`}
-							data-tags={(p.tags ?? []).join(',')}
-							data-title={(p.title ?? '').toLowerCase()}
-							data-id={p._id}
+						<!-- Theme Switcher -->
+						<button
+							type="button"
+							id="themeToggle"
+							class="theme-toggle"
+							aria-label="Toggle dark / light theme"
+							title="Toggle theme"
 						>
-							<div class="work-card-info">
-								<span class="work-kicker">0{idx + 1} · System Architecture</span>
-								<h3 class="work-name">
-									<button
-										type="button"
-										class="work-title-link"
-										data-open-modal={`modal-${p._id}`}
-										aria-label={`View details for ${p.title}`}
-									>
-										{p.title}
-									</button>
-								</h3>
-								{p.summary && <p class="work-desc">{p.summary}</p>}
+							<span class="theme-icon sun"><Icon name="sun" size={15} /></span>
+							<span class="theme-icon moon"><Icon name="moon" size={15} /></span>
+						</button>
+					</div>
+				</div>
+			</header>
 
-								{p.tags && p.tags.length > 0 && (
-									<div class="work-tags-row">
-										{p.tags.map((t) => (
-											<span class="spec-tag">{t}</span>
-										))}
+			<!-- Horizontal Viewport Slider -->
+			<main class="horizontal-slider" id="horizontalSlider">
+				<div class="panels-track" id="panelsTrack">
+					<!-- Panel 01: Profile -->
+					<section id="profile" class="horizontal-panel" data-panel-index="0" data-panel-title="Profile">
+						<div class="panel-inner">
+							<div class="panel-kicker-bar">
+								<span class="panel-kicker">01 / 05 · PROFILE &amp; STATEMENT</span>
+							</div>
+
+							<div class="editorial-hero">
+								<div class="hero-split">
+									<div class="hero-statement">
+										<h1 class="statement-headline">
+											{profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}
+										</h1>
+										<div class="statement-sub">
+											{profile?.bio ? (
+												<PortableText value={profile.bio} />
+											) : (
+												<p>
+													I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
+													I specialize in scalable backend systems — from relational and NoSQL database design to RESTful APIs and data security.
+												</p>
+											)}
+										</div>
+
+										<div class="hero-connect-row">
+											{profile?.email && (
+												<a href={`mailto:${profile.email}`} class="hero-cta-btn">
+													<Icon name="mail" size={14} />
+													<span>Email</span>
+												</a>
+											)}
+											{profile?.socials?.map((s) => (
+												<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="hero-social-link">
+													{s.label === 'GitHub' ? <Icon name="github" size={13} /> : s.label === 'LinkedIn' ? <Icon name="linkedin" size={13} /> : null}
+													<span>{s.label} ↗</span>
+												</a>
+											))}
+											<button type="button" class="hero-action-next" data-nav-index="1">
+												<span>Explore Works (02) →</span>
+											</button>
+										</div>
+									</div>
+
+									<div class="hero-portrait">
+										<div class="portrait-frame">
+											<img
+												src={avatarUrl}
+												alt={`Photo of ${name}`}
+												class="portrait-img"
+												width="200"
+												height="200"
+												loading="eager"
+											/>
+										</div>
+										<div class="portrait-meta">
+											<span class="portrait-name">{name}</span>
+											<span class="portrait-handle">@{nick.toLowerCase()}amain</span>
+										</div>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Panel 02: Selected Works -->
+					<section id="projects" class="horizontal-panel" data-panel-index="1" data-panel-title="Works">
+						<div class="panel-inner">
+							<div class="panel-kicker-bar">
+								<span class="panel-kicker">02 / 05 · SELECTED WORKS</span>
+							</div>
+
+							<div class="editorial-section works-section-wrap">
+								<div class="section-topbar">
+									<div class="topbar-header-row">
+										<div class="topbar-left">
+											<h2 class="section-title">Selected Works</h2>
+											<span class="section-count">({projects.length})</span>
+										</div>
+
+										<div class="topbar-controls">
+											<!-- Search Input -->
+											<div class="project-search-wrap">
+												<Icon name="search" size={13} />
+												<input
+													type="text"
+													id="projectSearch"
+													class="project-search-input"
+													placeholder="Search project or stack..."
+													aria-label="Search projects by title or technology"
+												/>
+											</div>
+
+											<!-- View Mode Toggle -->
+											<div class="view-toggle-group" role="group" aria-label="Project view mode">
+												<button
+													type="button"
+													id="btnViewShowcase"
+													class="view-btn active"
+													aria-pressed="true"
+													title="Showcase Cards View"
+												>
+													<Icon name="grid" size={13} />
+													<span>Showcase</span>
+												</button>
+												<button
+													type="button"
+													id="btnViewTable"
+													class="view-btn"
+													aria-pressed="false"
+													title="All Projects Table View"
+												>
+													<Icon name="list" size={13} />
+													<span>Index Table</span>
+												</button>
+											</div>
+										</div>
+									</div>
+
+									{/* Tag Filter Pills */}
+									{allTags.length > 0 && (
+										<div class="filter-capsules" role="tablist" aria-label="Filter works by technology">
+											<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+												All
+											</button>
+											{allTags.map((tag) => (
+												<button type="button" class="filter-btn" data-filter={tag} aria-pressed="false">
+													{tag}
+												</button>
+											))}
+										</div>
+									)}
+								</div>
+
+								<!-- 1. Editorial Showcase View -->
+								<div class="works-showcase-view" id="worksShowcase">
+									{projects.map((p, idx) => (
+										<article
+											class={`work-card ${idx >= 4 ? 'work-extra' : ''}`}
+											data-tags={(p.tags ?? []).join(',')}
+											data-title={(p.title ?? '').toLowerCase()}
+											data-id={p._id}
+										>
+											<div class="work-card-info">
+												<span class="work-kicker">0{idx + 1} · System Architecture</span>
+												<h3 class="work-name">
+													<button
+														type="button"
+														class="work-title-link"
+														data-open-modal={`modal-${p._id}`}
+														aria-label={`View details for ${p.title}`}
+													>
+														{p.title}
+													</button>
+												</h3>
+												{p.summary && <p class="work-desc">{p.summary}</p>}
+
+												{p.tags && p.tags.length > 0 && (
+													<div class="work-tags-row">
+														{p.tags.map((t) => (
+															<span class="spec-tag">{t}</span>
+														))}
+													</div>
+												)}
+
+												<div class="work-actions">
+													{p.liveUrl && (
+														<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+															<span>Live</span>
+															<Icon name="arrow-up-right" size={13} />
+														</a>
+													)}
+													{p.repoUrl && (
+														<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+															<span>Source</span>
+															<Icon name="arrow-up-right" size={13} />
+														</a>
+													)}
+													<button
+														type="button"
+														class="action-link-btn details-btn"
+														data-open-modal={`modal-${p._id}`}
+													>
+														<span>Overview</span>
+														<Icon name="info" size={13} />
+													</button>
+												</div>
+											</div>
+
+											<div class="work-card-preview">
+												<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`View overview for ${p.title}`}>
+													<div class="browser-bar">
+														<div class="browser-dots">
+															<span class="browser-dot"></span>
+															<span class="browser-dot"></span>
+															<span class="browser-dot"></span>
+														</div>
+														<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
+													</div>
+													<div class="browser-content">
+														{p.coverImage?.asset ? (
+															<img
+																src={imageUrl(p.coverImage, 900) ?? ''}
+																alt={p.title ?? 'Project view'}
+																loading="lazy"
+																class="browser-img"
+															/>
+														) : (
+															<div class="schematic-preview">
+																<div class="schematic-top">
+																	<Icon name="terminal" size={13} />
+																	<span>ENGINEERING ARCHITECTURE</span>
+																</div>
+																<div class="schematic-body">
+																	<span class="schematic-title">{p.title}</span>
+																	<span class="schematic-stack">{(p.tags ?? []).slice(0, 4).join(' · ')}</span>
+																</div>
+																<div class="schematic-footer">
+																	<span>READY FOR PRODUCTION</span>
+																</div>
+															</div>
+														)}
+													</div>
+												</div>
+											</div>
+										</article>
+									))}
+								</div>
+
+								<!-- Load More Button (Showcase View) -->
+								{projects.length > 4 && (
+									<div class="load-more-wrap" id="loadMoreWrap">
+										<button type="button" id="loadMoreBtn" class="load-more-btn">
+											<span id="loadMoreLabel">Show all {projects.length} projects</span>
+											<Icon name="chevron-down" size={13} />
+										</button>
 									</div>
 								)}
 
-								<div class="work-actions">
-									{p.liveUrl && (
-										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn">
-											<span>Live</span>
-											<Icon name="arrow-up-right" size={13} />
-										</a>
+								<!-- 2. Table Index View (Archive for large number of projects) -->
+								<div class="works-table-view" id="worksTableView" style="display: none;">
+									<table class="works-table">
+										<thead>
+											<tr>
+												<th>No.</th>
+												<th>Project</th>
+												<th>Technologies</th>
+												<th>Actions</th>
+											</tr>
+										</thead>
+										<tbody>
+											{projects.map((p, idx) => (
+												<tr
+													class="table-row-item"
+													data-tags={(p.tags ?? []).join(',')}
+													data-title={(p.title ?? '').toLowerCase()}
+												>
+													<td class="table-index">0{idx + 1}</td>
+													<td>
+														<div class="table-proj-info">
+															<button
+																type="button"
+																class="table-proj-name"
+																data-open-modal={`modal-${p._id}`}
+															>
+																{p.title}
+															</button>
+															{p.summary && <span class="table-proj-summary">{p.summary}</span>}
+														</div>
+													</td>
+													<td>
+														<div class="work-tags-row">
+															{(p.tags ?? []).slice(0, 4).map((t) => (
+																<span class="spec-tag">{t}</span>
+															))}
+														</div>
+													</td>
+													<td>
+														<div class="table-actions">
+															{p.liveUrl && (
+																<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Live Preview">
+																	<span>Live</span>
+																	<Icon name="arrow-up-right" size={11} />
+																</a>
+															)}
+															{p.repoUrl && (
+																<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Source Code">
+																	<span>Repo</span>
+																	<Icon name="arrow-up-right" size={11} />
+																</a>
+															)}
+															<button
+																type="button"
+																class="action-link-btn"
+																data-open-modal={`modal-${p._id}`}
+																title="Project Details"
+															>
+																<span>Details</span>
+															</button>
+														</div>
+													</td>
+												</tr>
+											))}
+										</tbody>
+									</table>
+								</div>
+
+								<!-- Filter empty state -->
+								<div id="noResultsMsg" class="editorial-empty" style="display: none;">
+									<p>No projects match your search or filter.</p>
+									<button type="button" class="action-link" id="resetFilter">Clear filters →</button>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Panel 03: Experience & Roles -->
+					<section id="experience" class="horizontal-panel" data-panel-index="2" data-panel-title="Experience">
+						<div class="panel-inner">
+							<div class="panel-kicker-bar">
+								<span class="panel-kicker">03 / 05 · CAREER &amp; EXPERIENCE</span>
+							</div>
+
+							<div class="editorial-section">
+								<div class="section-topbar">
+									<h2 class="section-title">Experience &amp; Roles</h2>
+								</div>
+
+								<div class="experience-table">
+									{experiences.map((e) => (
+										<div class="exp-row">
+											<div class="exp-col-date">
+												<span class="exp-time">
+													{formatMonthYear(e.startDate)} — {e.current ? 'Present' : formatMonthYear(e.endDate)}
+												</span>
+												{e.location && <span class="exp-loc">{e.location}</span>}
+											</div>
+
+											<div class="exp-col-role">
+												<h3 class="exp-position">{e.position}</h3>
+												<span class="exp-company">@ {e.company}</span>
+											</div>
+
+											<div class="exp-col-summary">
+												{e.summary && <p>{e.summary}</p>}
+												{e.tags && e.tags.length > 0 && (
+													<div class="exp-tags-list">
+														{e.tags.map((t) => (
+															<span class="spec-tag">{t}</span>
+														))}
+													</div>
+												)}
+											</div>
+										</div>
+									))}
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Panel 04: Technical Architecture & Stack -->
+					<section id="about" class="horizontal-panel" data-panel-index="3" data-panel-title="About">
+						<div class="panel-inner">
+							<div class="panel-kicker-bar">
+								<span class="panel-kicker">04 / 05 · TECHNICAL ARCHITECTURE &amp; STACK</span>
+							</div>
+
+							<div class="editorial-section">
+								<div class="section-topbar">
+									<h2 class="section-title">About &amp; Stack</h2>
+								</div>
+
+								<div class="about-grid">
+									<div class="about-prose">
+										{profile?.bio ? (
+											<PortableText value={profile.bio} />
+										) : (
+											<p>
+												I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
+												I specialize in scalable backend systems, Linux servers, and end-to-end web deployment.
+											</p>
+										)}
+									</div>
+
+									<div class="about-aside">
+										<h3 class="aside-heading">Technical Skills &amp; Stack</h3>
+										{skills && skills.length > 0 ? (
+											<div class="skills-grid">
+												{skillCategories.map((cat) => {
+													const catSkills = skills.filter((s) => s.category?.toLowerCase() === cat.key);
+													if (catSkills.length === 0) return null;
+													return (
+														<div class="skill-group">
+															<span class="skill-group-label">{cat.label}</span>
+															<div class="skill-group-pills">
+																{catSkills.map((s) => (
+																	<span class="skill-pill" title={s.level ? `Level: ${s.level}` : undefined}>
+																		{s.name}
+																	</span>
+																))}
+															</div>
+														</div>
+													);
+												})}
+											</div>
+										) : (
+											<ul class="aside-list">
+												<li>
+													<strong>System Architecture</strong>
+													<span>Designing data contracts, RESTful interfaces, and modular backend services.</span>
+												</li>
+												<li>
+													<strong>Linux &amp; Server Infrastructure</strong>
+													<span>Server security, Docker container orchestration, deployment automation, and process monitoring.</span>
+												</li>
+												<li>
+													<strong>Database Engineering</strong>
+													<span>Relational data modeling with PostgreSQL, indexing, query optimization, and cache management.</span>
+												</li>
+												<li>
+													<strong>Full-Stack Frontend</strong>
+													<span>Next.js, Tailwind CSS, and TypeScript for responsive, accessible user interfaces.</span>
+												</li>
+											</ul>
+										)}
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+
+					<!-- Panel 05: Contact & Colophon -->
+					<section id="contact" class="horizontal-panel" data-panel-index="4" data-panel-title="Contact">
+						<div class="panel-inner">
+							<div class="panel-kicker-bar">
+								<span class="panel-kicker">05 / 05 · TRANSMISSION &amp; CONNECT</span>
+							</div>
+
+							<div class="editorial-section contact-section">
+								<div class="section-topbar">
+									<h2 class="section-title">Get in Touch</h2>
+								</div>
+
+								<div class="contact-box">
+									<p class="contact-intro">
+										If you have a backend infrastructure challenge, a project inquiry, or want to discuss technical collaboration, write directly:
+									</p>
+
+									{profile?.email && (
+										<div class="contact-email-row">
+											<a href={`mailto:${profile.email}`} class="big-email-link">
+												{profile.email}
+											</a>
+											<button
+												type="button"
+												class="copy-btn"
+												id="copyEmailBtn"
+												data-email={profile.email}
+												title="Copy email to clipboard"
+											>
+												<span id="copyStatus">Copy Address</span>
+											</button>
+										</div>
 									)}
-									{p.repoUrl && (
-										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn">
-											<span>Source</span>
-											<Icon name="arrow-up-right" size={13} />
-										</a>
+
+									{profile?.socials && profile.socials.length > 0 && (
+										<div class="contact-social-row">
+											<span class="social-caption">Elsewhere:</span>
+											<div class="social-links-list">
+												{profile.socials.map((s) => (
+													<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
+														{s.label} ↗
+													</a>
+												))}
+											</div>
+										</div>
 									)}
-									<button
-										type="button"
-										class="action-link-btn details-btn"
-										data-open-modal={`modal-${p._id}`}
-									>
-										<span>Overview</span>
-										<Icon name="info" size={13} />
-									</button>
 								</div>
 							</div>
 
-							<div class="work-card-preview">
-								<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`View overview for ${p.title}`}>
+							<!-- In-panel colophon footer -->
+							<div class="panel-footer-colophon">
+								<div class="footer-wrapper">
+									<div class="footer-col">
+										<span>{name}</span>
+										<span class="footer-dot">·</span>
+										<span>© {year}</span>
+									</div>
+									<div class="footer-col">
+										<span class="footer-quiet" id="visitorCounter">Visitor #{visitorNo}</span>
+									</div>
+									<div class="footer-col">
+										<button type="button" class="back-start-btn" data-nav-index="0">Back to start (01) ↑</button>
+									</div>
+								</div>
+							</div>
+						</div>
+					</section>
+				</div>
+			</main>
+
+			<!-- Bottom Nav & Status Bar -->
+			<footer class="bottom-nav-bar">
+				<div class="bottom-nav-left">
+					<span class="panel-badge" id="currentPanelBadge">01 / 05</span>
+					<span class="panel-label" id="currentPanelLabel">PROFILE</span>
+				</div>
+				<div class="bottom-nav-center">
+					<div class="panel-dots" id="panelDots" role="tablist" aria-label="Section navigation">
+						<button type="button" class="panel-dot active" data-nav-index="0" aria-label="Section 1: Profile" role="tab" aria-selected="true"></button>
+						<button type="button" class="panel-dot" data-nav-index="1" aria-label="Section 2: Works" role="tab" aria-selected="false"></button>
+						<button type="button" class="panel-dot" data-nav-index="2" aria-label="Section 3: Experience" role="tab" aria-selected="false"></button>
+						<button type="button" class="panel-dot" data-nav-index="3" aria-label="Section 4: About" role="tab" aria-selected="false"></button>
+						<button type="button" class="panel-dot" data-nav-index="4" aria-label="Section 5: Contact" role="tab" aria-selected="false"></button>
+					</div>
+				</div>
+				<div class="bottom-nav-right">
+					<button type="button" id="prevPanelBtn" class="nav-step-btn" aria-label="Previous section" disabled>
+						<Icon name="chevron-left" size={13} />
+						<span>Prev</span>
+					</button>
+					<span class="nav-step-divider">|</span>
+					<button type="button" id="nextPanelBtn" class="nav-step-btn" aria-label="Next section">
+						<span>Next</span>
+						<Icon name="chevron-right" size={13} />
+					</button>
+				</div>
+			</footer>
+
+			<!-- Project Overview Modals (Positioned directly under body, centered in viewport) -->
+			{projects.map((p) => (
+				<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
+					<div class="dialog-inner">
+						<div class="dialog-top">
+							<div class="dialog-title-wrap">
+								<span class="dialog-kicker">Case Study · Project Overview</span>
+								<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+							</div>
+							<div class="dialog-top-actions">
+								{p.liveUrl && (
+									<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="Visit Live Site">
+										<span>Live Site</span>
+										<Icon name="arrow-up-right" size={12} />
+									</a>
+								)}
+								{p.repoUrl && (
+									<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="View Source">
+										<span>Source</span>
+										<Icon name="arrow-up-right" size={12} />
+									</a>
+								)}
+								<button type="button" class="dialog-close" data-close-modal aria-label="Close overview" title="Close">
+									<Icon name="x" size={18} />
+								</button>
+							</div>
+						</div>
+
+						<div class="dialog-scroll">
+							{p.coverImage?.asset && (
+								<div class="dialog-media-frame">
 									<div class="browser-bar">
 										<div class="browser-dots">
 											<span class="browser-dot"></span>
@@ -311,375 +713,62 @@ const getDomain = (url: string | null | undefined) => {
 										</div>
 										<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
 									</div>
-									<div class="browser-content">
-										{p.coverImage?.asset ? (
-											<img
-												src={imageUrl(p.coverImage, 900) ?? ''}
-												alt={p.title ?? 'Project view'}
-												loading="lazy"
-												class="browser-img"
-											/>
-										) : (
-											<div class="schematic-preview">
-												<div class="schematic-top">
-													<Icon name="terminal" size={13} />
-													<span>ENGINEERING ARCHITECTURE</span>
-												</div>
-												<div class="schematic-body">
-													<span class="schematic-title">{p.title}</span>
-													<span class="schematic-stack">{(p.tags ?? []).slice(0, 4).join(' · ')}</span>
-												</div>
-												<div class="schematic-footer">
-													<span>READY FOR PRODUCTION</span>
-												</div>
-											</div>
-										)}
+									<div class="dialog-img-wrap">
+										<img
+											src={imageUrl(p.coverImage, 1200) ?? ''}
+											alt={p.title ?? 'Project full view'}
+											class="dialog-cover-img"
+											loading="lazy"
+										/>
 									</div>
 								</div>
-							</div>
-						</article>
-					))}
-				</div>
+							)}
 
-				<!-- Load More Button (Showcase View) -->
-				{projects.length > 4 && (
-					<div class="load-more-wrap" id="loadMoreWrap">
-						<button type="button" id="loadMoreBtn" class="load-more-btn">
-							<span id="loadMoreLabel">Show all {projects.length} projects</span>
-							<Icon name="chevron-down" size={13} />
-						</button>
-					</div>
-				)}
-
-				<!-- 2. Table Index View (Archive for large number of projects) -->
-				<div class="works-table-view" id="worksTableView" style="display: none;">
-					<table class="works-table">
-						<thead>
-							<tr>
-								<th>No.</th>
-								<th>Project</th>
-								<th>Technologies</th>
-								<th>Actions</th>
-							</tr>
-						</thead>
-						<tbody>
-							{projects.map((p, idx) => (
-								<tr
-									class="table-row-item"
-									data-tags={(p.tags ?? []).join(',')}
-									data-title={(p.title ?? '').toLowerCase()}
-								>
-									<td class="table-index">0{idx + 1}</td>
-									<td>
-										<div class="table-proj-info">
-											<button
-												type="button"
-												class="table-proj-name"
-												data-open-modal={`modal-${p._id}`}
-											>
-												{p.title}
-											</button>
-											{p.summary && <span class="table-proj-summary">{p.summary}</span>}
-										</div>
-									</td>
-									<td>
-										<div class="work-tags-row">
-											{(p.tags ?? []).slice(0, 4).map((t) => (
-												<span class="spec-tag">{t}</span>
-											))}
-										</div>
-									</td>
-									<td>
-										<div class="table-actions">
-											{p.liveUrl && (
-												<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Live Preview">
-													<span>Live</span>
-													<Icon name="arrow-up-right" size={11} />
-												</a>
-											)}
-											{p.repoUrl && (
-												<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Source Code">
-													<span>Repo</span>
-													<Icon name="arrow-up-right" size={11} />
-												</a>
-											)}
-											<button
-												type="button"
-												class="action-link-btn"
-												data-open-modal={`modal-${p._id}`}
-												title="Project Details"
-											>
-												<span>Details</span>
-											</button>
-										</div>
-									</td>
-								</tr>
-							))}
-						</tbody>
-					</table>
-				</div>
-
-				<!-- Filter empty state -->
-				<div id="noResultsMsg" class="editorial-empty" style="display: none;">
-					<p>No projects match your search or filter.</p>
-					<button type="button" class="action-link" id="resetFilter">Clear filters →</button>
-				</div>
-
-				<!-- Detail Modals -->
-				{projects.map((p) => (
-					<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
-						<div class="dialog-inner">
-							<div class="dialog-top">
-								<div class="dialog-title-wrap">
-									<span class="dialog-kicker">Case Study · Project Overview</span>
-									<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+							{p.summary && (
+								<div class="dialog-summary-box">
+									<p class="dialog-lead">{p.summary}</p>
 								</div>
-								<div class="dialog-top-actions">
-									{p.liveUrl && (
-										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="Visit Live Site">
-											<span>Live Site</span>
-											<Icon name="arrow-up-right" size={12} />
-										</a>
-									)}
-									{p.repoUrl && (
-										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-top-btn" title="View Source">
-											<span>Source</span>
-											<Icon name="arrow-up-right" size={12} />
-										</a>
-									)}
-									<button type="button" class="dialog-close" data-close-modal aria-label="Close overview" title="Close">
-										<Icon name="x" size={18} />
-									</button>
-								</div>
-							</div>
+							)}
 
-							<div class="dialog-scroll">
-								{p.coverImage?.asset && (
-									<div class="dialog-media-frame">
-										<div class="browser-bar">
-											<div class="browser-dots">
-												<span class="browser-dot"></span>
-												<span class="browser-dot"></span>
-												<span class="browser-dot"></span>
-											</div>
-											<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
-										</div>
-										<div class="dialog-img-wrap">
-											<img
-												src={imageUrl(p.coverImage, 1200) ?? ''}
-												alt={p.title ?? 'Project full view'}
-												class="dialog-cover-img"
-												loading="lazy"
-											/>
-										</div>
-									</div>
-								)}
-
-								{p.summary && (
-									<div class="dialog-summary-box">
-										<p class="dialog-lead">{p.summary}</p>
-									</div>
-								)}
-
-								{p.tags && p.tags.length > 0 && (
-									<div class="dialog-spec-row">
-										<span class="spec-label">Technologies:</span>
-										<div class="spec-pills">
-											{p.tags.map((t) => (
-												<span class="spec-tag">{t}</span>
-											))}
-										</div>
-									</div>
-								)}
-
-								{p.description && p.description.length > 0 && (
-									<div class="dialog-body-prose">
-										<PortableText value={p.description} />
-									</div>
-								)}
-
-								<div class="dialog-links-row">
-									{p.liveUrl && (
-										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="button-solid">
-											<span>Visit Live Site</span>
-											<Icon name="arrow-up-right" size={14} />
-										</a>
-									)}
-									{p.repoUrl && (
-										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="button-outline">
-											<span>View Repository</span>
-											<Icon name="arrow-up-right" size={14} />
-										</a>
-									)}
-									<button type="button" class="button-ghost" data-close-modal>
-										Close Overview
-									</button>
-								</div>
-							</div>
-						</div>
-					</dialog>
-				))}
-			</section>
-
-			<!-- Experience & Background -->
-			<section id="experience" class="editorial-section">
-				<div class="section-topbar">
-					<h2 class="section-title">Experience &amp; Roles</h2>
-				</div>
-
-				<div class="experience-table">
-					{experiences.map((e) => (
-						<div class="exp-row">
-							<div class="exp-col-date">
-								<span class="exp-time">
-									{formatMonthYear(e.startDate)} — {e.current ? 'Present' : formatMonthYear(e.endDate)}
-								</span>
-								{e.location && <span class="exp-loc">{e.location}</span>}
-							</div>
-
-							<div class="exp-col-role">
-								<h3 class="exp-position">{e.position}</h3>
-								<span class="exp-company">@ {e.company}</span>
-							</div>
-
-							<div class="exp-col-summary">
-								{e.summary && <p>{e.summary}</p>}
-								{e.tags && e.tags.length > 0 && (
-									<div class="exp-tags-list">
-										{e.tags.map((t) => (
+							{p.tags && p.tags.length > 0 && (
+								<div class="dialog-spec-row">
+									<span class="spec-label">Technologies:</span>
+									<div class="spec-pills">
+										{p.tags.map((t) => (
 											<span class="spec-tag">{t}</span>
 										))}
 									</div>
-								)}
-							</div>
-						</div>
-					))}
-				</div>
-			</section>
+								</div>
+							)}
 
-			<!-- About & Engineering Approach -->
-			<section id="about" class="editorial-section">
-				<div class="section-topbar">
-					<h2 class="section-title">About &amp; Stack</h2>
-				</div>
+							{p.description && p.description.length > 0 && (
+								<div class="dialog-body-prose">
+									<PortableText value={p.description} />
+								</div>
+							)}
 
-				<div class="about-grid">
-					<div class="about-prose">
-						{profile?.bio ? (
-							<PortableText value={profile.bio} />
-						) : (
-							<p>
-								I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
-								I specialize in scalable backend systems, Linux servers, and end-to-end web deployment.
-							</p>
-						)}
-					</div>
-
-					<div class="about-aside">
-						<h3 class="aside-heading">Technical Skills &amp; Stack</h3>
-						{skills && skills.length > 0 ? (
-							<div class="skills-grid">
-								{skillCategories.map((cat) => {
-									const catSkills = skills.filter((s) => s.category?.toLowerCase() === cat.key);
-									if (catSkills.length === 0) return null;
-									return (
-										<div class="skill-group">
-											<span class="skill-group-label">{cat.label}</span>
-											<div class="skill-group-pills">
-												{catSkills.map((s) => (
-													<span class="skill-pill" title={s.level ? `Level: ${s.level}` : undefined}>
-														{s.name}
-													</span>
-												))}
-											</div>
-										</div>
-									);
-								})}
-							</div>
-						) : (
-							<ul class="aside-list">
-								<li>
-									<strong>System Architecture</strong>
-									<span>Designing data contracts, RESTful interfaces, and modular backend services.</span>
-								</li>
-								<li>
-									<strong>Linux &amp; Server Infrastructure</strong>
-									<span>Server security, Docker container orchestration, deployment automation, and process monitoring.</span>
-								</li>
-								<li>
-									<strong>Database Engineering</strong>
-									<span>Relational data modeling with PostgreSQL, indexing, query optimization, and cache management.</span>
-								</li>
-								<li>
-									<strong>Full-Stack Frontend</strong>
-									<span>Next.js, Tailwind CSS, and TypeScript for responsive, accessible user interfaces.</span>
-								</li>
-							</ul>
-						)}
-					</div>
-				</div>
-			</section>
-
-			<!-- Contact / Get in touch -->
-			<section id="contact" class="editorial-section contact-section">
-				<div class="section-topbar">
-					<h2 class="section-title">Get in Touch</h2>
-				</div>
-
-				<div class="contact-box">
-					<p class="contact-intro">
-						If you have a backend infrastructure challenge, a project inquiry, or want to discuss technical collaboration, write directly:
-					</p>
-
-					{profile?.email && (
-						<div class="contact-email-row">
-							<a href={`mailto:${profile.email}`} class="big-email-link">
-								{profile.email}
-							</a>
-							<button
-								type="button"
-								class="copy-btn"
-								id="copyEmailBtn"
-								data-email={profile.email}
-								title="Copy email to clipboard"
-							>
-								<span id="copyStatus">Copy Address</span>
-							</button>
-						</div>
-					)}
-
-					{profile?.socials && profile.socials.length > 0 && (
-						<div class="contact-social-row">
-							<span class="social-caption">Elsewhere:</span>
-							<div class="social-links-list">
-								{profile.socials.map((s) => (
-									<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
-										{s.label} ↗
+							<div class="dialog-links-row">
+								{p.liveUrl && (
+									<a href={p.liveUrl} target="_blank" rel="noreferrer" class="button-solid">
+										<span>Visit Live Site</span>
+										<Icon name="arrow-up-right" size={14} />
 									</a>
-								))}
+								)}
+								{p.repoUrl && (
+									<a href={p.repoUrl} target="_blank" rel="noreferrer" class="button-outline">
+										<span>View Repository</span>
+										<Icon name="arrow-up-right" size={14} />
+									</a>
+								)}
+								<button type="button" class="button-ghost" data-close-modal>
+									Close Overview
+								</button>
 							</div>
 						</div>
-					)}
-				</div>
-			</section>
-		</main>
-
-		<!-- Footer -->
-		<footer class="page-footer">
-			<div class="footer-wrapper">
-				<div class="footer-col">
-					<span>{name}</span>
-					<span class="footer-dot">·</span>
-					<span>© {year}</span>
-				</div>
-				<div class="footer-col">
-					<span class="footer-quiet" id="visitorCounter">Visitor #{visitorNo}</span>
-				</div>
-				<div class="footer-col">
-					<a href="#" class="back-top-link">Back to top ↑</a>
-				</div>
-			</div>
-		</footer>
+					</div>
+				</dialog>
+			))}
+		</div>
 	</body>
 </html>
 
@@ -693,6 +782,184 @@ const getDomain = (url: string | null | undefined) => {
 			document.documentElement.setAttribute('data-theme', next);
 			localStorage.setItem('theme', next);
 		});
+	}
+
+	// Panel Navigation System (Horizontal Menu-Driven)
+	const panelsTrack = document.getElementById('panelsTrack') as HTMLElement | null;
+	const panels = document.querySelectorAll<HTMLElement>('.horizontal-panel');
+	const navAnchors = document.querySelectorAll<HTMLElement>('.nav-anchor[data-nav-index]');
+	const panelDots = document.querySelectorAll<HTMLElement>('.panel-dot[data-nav-index]');
+	const currentPanelBadge = document.getElementById('currentPanelBadge');
+	const currentPanelLabel = document.getElementById('currentPanelLabel');
+	const prevPanelBtn = document.getElementById('prevPanelBtn') as HTMLButtonElement | null;
+	const nextPanelBtn = document.getElementById('nextPanelBtn') as HTMLButtonElement | null;
+
+	const panelTitles = ['PROFILE', 'SELECTED WORKS', 'EXPERIENCE', 'CAPABILITIES', 'CONTACT'];
+	let currentPanelIndex = 0;
+	const totalPanels = panels.length;
+
+	const goToPanel = (index: number, updateHash = true) => {
+		if (index < 0 || index >= totalPanels) return;
+		currentPanelIndex = index;
+
+		// Move slider track horizontally
+		if (panelsTrack) {
+			panelsTrack.style.transform = `translateX(-${index * 100}vw)`;
+		}
+
+		// Update active state in top nav menu
+		navAnchors.forEach((a) => {
+			const idx = Number(a.dataset.navIndex);
+			if (idx === index) {
+				a.classList.add('active');
+				a.setAttribute('aria-selected', 'true');
+				a.scrollIntoView({ behavior: 'smooth', block: 'nearest', inline: 'center' });
+			} else {
+				a.classList.remove('active');
+				a.setAttribute('aria-selected', 'false');
+			}
+		});
+
+		// Update dots
+		panelDots.forEach((dot) => {
+			const idx = Number(dot.dataset.navIndex);
+			if (idx === index) {
+				dot.classList.add('active');
+				dot.setAttribute('aria-selected', 'true');
+			} else {
+				dot.classList.remove('active');
+				dot.setAttribute('aria-selected', 'false');
+			}
+		});
+
+		// Update bottom status bar
+		if (currentPanelBadge) {
+			currentPanelBadge.textContent = `0${index + 1} / 0${totalPanels}`;
+		}
+		if (currentPanelLabel) {
+			currentPanelLabel.textContent = panelTitles[index] || '';
+		}
+
+		// Update prev/next button states
+		if (prevPanelBtn) prevPanelBtn.disabled = index === 0;
+		if (nextPanelBtn) nextPanelBtn.disabled = index === totalPanels - 1;
+
+		// Update URL hash
+		const activePanel = panels[index];
+		if (activePanel && updateHash) {
+			const targetId = activePanel.id;
+			if (targetId) {
+				history.replaceState(null, '', '#' + targetId);
+			}
+		}
+
+		// Reset panel scroll to top when entered
+		activePanel?.scrollTo({ top: 0, behavior: 'instant' });
+	};
+
+	// Event listeners for menu anchors & dots
+	navAnchors.forEach((btn) => {
+		btn.addEventListener('click', (e) => {
+			e.preventDefault();
+			const idx = Number(btn.dataset.navIndex);
+			goToPanel(idx);
+		});
+	});
+
+	panelDots.forEach((dot) => {
+		dot.addEventListener('click', () => {
+			const idx = Number(dot.dataset.navIndex);
+			goToPanel(idx);
+		});
+	});
+
+	if (prevPanelBtn) {
+		prevPanelBtn.addEventListener('click', () => {
+			goToPanel(currentPanelIndex - 1);
+		});
+	}
+
+	if (nextPanelBtn) {
+		nextPanelBtn.addEventListener('click', () => {
+			goToPanel(currentPanelIndex + 1);
+		});
+	}
+
+	// Buttons inside panels that navigate to specific panels
+	document.querySelectorAll<HTMLElement>('[data-nav-index]').forEach((el) => {
+		if (el.classList.contains('nav-anchor') || el.classList.contains('panel-dot')) return;
+		el.addEventListener('click', (e) => {
+			e.preventDefault();
+			const idx = Number(el.dataset.navIndex);
+			goToPanel(idx);
+		});
+	});
+
+	// Support any link with href="#section" navigating to that panel
+	document.querySelectorAll<HTMLAnchorElement>('a[href^="#"]').forEach((link) => {
+		link.addEventListener('click', (e) => {
+			const href = link.getAttribute('href');
+			if (!href || href === '#') return;
+			const targetId = href.replace('#', '');
+			const targetPanel = document.getElementById(targetId);
+			if (targetPanel && targetPanel.classList.contains('horizontal-panel')) {
+				e.preventDefault();
+				const idx = Array.from(panels).indexOf(targetPanel);
+				if (idx !== -1) {
+					goToPanel(idx);
+				}
+			}
+		});
+	});
+
+	// Keyboard arrow navigation
+	window.addEventListener('keydown', (e) => {
+		const isInput = ['INPUT', 'TEXTAREA', 'SELECT'].includes((e.target as HTMLElement)?.tagName);
+		const hasOpenDialog = document.querySelector('dialog[open]');
+		if (isInput || hasOpenDialog) return;
+
+		if (e.key === 'ArrowRight') {
+			goToPanel(currentPanelIndex + 1);
+		} else if (e.key === 'ArrowLeft') {
+			goToPanel(currentPanelIndex - 1);
+		}
+	});
+
+	// Touch swipe navigation for mobile
+	let touchStartX = 0;
+	let touchStartY = 0;
+	const slider = document.getElementById('horizontalSlider');
+	if (slider) {
+		slider.addEventListener('touchstart', (e) => {
+			touchStartX = e.changedTouches[0].screenX;
+			touchStartY = e.changedTouches[0].screenY;
+		}, { passive: true });
+
+		slider.addEventListener('touchend', (e) => {
+			const touchEndX = e.changedTouches[0].screenX;
+			const touchEndY = e.changedTouches[0].screenY;
+			const diffX = touchStartX - touchEndX;
+			const diffY = touchStartY - touchEndY;
+			if (Math.abs(diffX) > Math.abs(diffY) && Math.abs(diffX) > 50) {
+				if (diffX > 0) {
+					goToPanel(currentPanelIndex + 1);
+				} else {
+					goToPanel(currentPanelIndex - 1);
+				}
+			}
+		}, { passive: true });
+	}
+
+	// Initialize based on URL hash on load
+	const hash = window.location.hash.replace('#', '');
+	if (hash) {
+		const targetPanel = document.getElementById(hash);
+		if (targetPanel && targetPanel.classList.contains('horizontal-panel')) {
+			const idx = Array.from(panels).indexOf(targetPanel);
+			if (idx !== -1) {
+				goToPanel(idx, false);
+			}
+		}
 	}
 
 	// Project View State, Search, & Filtering
@@ -911,4 +1178,4 @@ const getDomain = (url: string | null | undefined) => {
 			/* fallback remains */
 		}
 	})();
-</script>
+</script>\n
