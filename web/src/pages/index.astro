@@ -18,35 +18,23 @@ const [profile, projects, experiences] = await Promise.all([
 
 const name = profile?.name ?? 'Redho Arifin';
 const nick = profile?.nickname ?? 'Redo';
-const role = profile?.role ?? 'Programmer';
+const role = profile?.role ?? 'Backend Developer';
 const year = new Date().getFullYear();
 
 const visitorNo = String(
 	(1337 + [...name + nick + role].reduce((sum, c) => sum + c.charCodeAt(0), 0)) % 100000,
 ).padStart(6, '0');
-// Fallback saat /api/visits belum tersedia (mis. astro dev lokal).
-// Di production (Vercel), angka ini langsung diganti hasil fetch real-time.
 
-// Unique tags across all projects for retro filter toolbar
+// Unique tags across all projects
 const allTags = Array.from(
 	new Set(projects.flatMap((p) => p.tags ?? []).filter(Boolean)),
 ).sort();
-const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
 
-// brand icon name for social links
-const socialIcon = (label: string | null | undefined): string => {
-	const l = (label ?? '').toLowerCase();
-	if (l.includes('github')) return 'github';
-	if (l.includes('linkedin')) return 'linkedin';
-	if (l.includes('twitter') || l.includes('x')) return 'twitter';
-	if (l.includes('instagram')) return 'instagram';
-	if (l.includes('facebook')) return 'facebook';
-	if (l.includes('youtube')) return 'youtube';
-	return 'globe';
-};
+const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
 ---
 
-<html lang="en">
+<!DOCTYPE html>
+<html lang="en" class="scroll-smooth" data-theme="dark">
 	<head>
 		<meta charset="utf-8" />
 		<meta name="viewport" content="width=device-width, initial-scale=1.0" />
@@ -54,525 +42,486 @@ const socialIcon = (label: string | null | undefined): string => {
 		<meta name="generator" content={Astro.generator} />
 		<meta
 			name="description"
-			content={`Personal homepage of ${name} (${nick}) — ${role}. ${profile?.tagline ?? ''}`.trim()}
+			content={`${name} — ${role}. ${profile?.tagline ?? 'Backend Developer & Systems Specialist.'}`.trim()}
 		/>
-		<meta property="og:title" content={`${name}'s Homepage`} />
-		<title>{`${name} (${nick}) — Homepage`}</title>
+		<meta property="og:title" content={`${name} — ${role}`} />
+		<meta property="og:description" content={profile?.tagline ?? 'Backend Developer & Systems Specialist'} />
+
+		<!-- Prevent Flash of Unstyled Theme -->
+		<script is:inline>
+			const storedTheme = localStorage.getItem('theme');
+			const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
+			const theme = storedTheme || (prefersDark ? 'dark' : 'light');
+			document.documentElement.setAttribute('data-theme', theme);
+		</script>
+
+		<link rel="preconnect" href="https://fonts.googleapis.com" />
+		<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
+		<link
+			href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;500;600&family=Plus+Jakarta+Sans:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400&display=swap"
+			rel="stylesheet"
+		/>
+		<title>{`${name} — ${role}`}</title>
 	</head>
 
 	<body>
-		<div class="win">
-			{/* ---------- window title bar ---------- */}
-			<div class="win-titlebar">
-				<span class="win-icon" aria-hidden="true"></span>
-				<span>{nick} — Homepage</span>
-			</div>
-
-			{/* ---------- marquee ---------- */}
-			<div class="marquee" aria-hidden="true">
-				<div class="marquee-track">
-					<span>✦ Welcome to {nick}'s homepage ✦ </span>
-					<span>✦ Welcome to {nick}'s homepage ✦ </span>
-					<span>✦ Welcome to {nick}'s homepage ✦ </span>
-					<span>✦ Welcome to {nick}'s homepage ✦ </span>
-				</div>
-			</div>
-
-		{/* ---------- hero ---------- */}
-<header class="hero">
-	{
-		profile?.avatar?.asset ? (
-			<div class="avatar-wrap">
-				<img
-					src={imageUrl(profile.avatar, 260) ?? ''}
-					alt={`Photo of ${name}`}
-					class="avatar-frame"
-					width="130"
-					height="130"
-				/>
-			</div>
-		) : (
-			<div class="no-photo">{name.slice(0, 1)}</div>
-		)
-	}
-	<h1>{name}</h1>
-	<p class="aka">
-		a.k.a. <b>{nick}</b> — {role}
-	</p>
-	{profile?.tagline && <p class="tagline">{profile.tagline}</p>}
-
-{/* Visitor Counter dengan efek rolling */}
-{/* Visitor counter dengan tema monochrome */}
-<div class="counter-line">
-	<span>You are visitor number</span>
-	<div class="counter" id="visitorCounter" aria-label={`Visitor number ${visitorNo}`}>
-		{visitorNo.split('').map((d) => (
-			<i>{d}</i>
-		))}
-	</div>
-</div>
-
-	{/* Tambahan counter style LCD (opsional) */}
-	{/* <div class="counter-line">
-		<span>👤 Visitor #</span>
-		<div class="counter-lcd">
-			{visitorNo.split('').map((d, index) => (
-				<i key={index}>{d}</i>
-			))}
-		</div>
-	</div> */}
-</header>
-			{/* ---------- menu dengan hamburger untuk mobile ---------- */}
-			<nav class="menu" aria-label="Main menu">
-				<button class="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">
-					<span class="menu-toggle-icon">☰</span>
-					<span class="menu-toggle-text">Menu</span>
-				</button>
-				<ul class="menu-list" id="menuList">
-					<li><a href="#about"><Icon name="user" size={13} /> About</a></li>
-					<li><a href="#projects"><Icon name="folder" size={13} /> Projects</a></li>
-					<li><a href="#experience"><Icon name="briefcase" size={13} /> Experience</a></li>
-					<li><a href="#contact"><Icon name="mail" size={13} /> Contact</a></li>
-				</ul>
-			</nav>
-
-			{/* ---------- ABOUT ---------- */}
-			<section id="about" class="rbox">
-				<div class="rbox-bar">
-					<span class="rbox-ico"><Icon name="user" size={15} /></span>
-					<span>About Me</span>
-				</div>
-				<div class="rbox-body">
-					<div class="pt-content">
-						{profile?.bio ? (
-							<PortableText value={profile.bio} />
-						) : (
-							<p class="empty-note">(No bio yet — edit it in Sanity Studio.)</p>
-						)}
+		<!-- Header / Editorial Top Bar -->
+		<header class="top-nav">
+			<div class="nav-wrapper">
+				<a href="#" class="brand">
+					<img
+						src="/avatar.jpg"
+						alt={`Avatar of ${name}`}
+						class="brand-avatar"
+						width="32"
+						height="32"
+					/>
+					<div class="brand-text">
+						<span class="brand-title">{name}</span>
+						<span class="brand-sub">{role} · {profile?.location ?? 'Surabaya, ID'}</span>
 					</div>
-					<div class="contact-meta">
-						{profile?.location && (
-							<span class="meta-item">
-								<Icon name="map-pin" size={13} />
-								{profile.location}
-							</span>
-						)}
-						{profile?.email && (
-							<span class="meta-item">
-								<Icon name="mail" size={13} />
-								<a href={`mailto:${profile.email}`}>{profile.email}</a>
-							</span>
-						)}
+				</a>
+
+				<div class="nav-controls">
+					<nav class="nav-menu" aria-label="Page Sections">
+						<a href="#projects" class="nav-anchor">Work</a>
+						<a href="#experience" class="nav-anchor">Experience</a>
+						<a href="#about" class="nav-anchor">About</a>
+						<a href="#contact" class="nav-anchor">Contact</a>
+					</nav>
+
+					<!-- Theme Switcher -->
+					<button
+						type="button"
+						id="themeToggle"
+						class="theme-toggle"
+						aria-label="Toggle dark / light theme"
+						title="Toggle theme"
+					>
+						<span class="theme-icon sun"><Icon name="sun" size={15} /></span>
+						<span class="theme-icon moon"><Icon name="moon" size={15} /></span>
+					</button>
+				</div>
+			</div>
+		</header>
+
+		<!-- Main Layout -->
+		<main class="page-body">
+			<!-- Hero / Editorial Statement -->
+			<section class="editorial-hero">
+				<div class="hero-split">
+					<div class="hero-statement">
+						<h1 class="statement-headline">
+							Backend developer &amp; systems specialist building reliable infrastructure, automated business tooling, and resilient web platforms.
+						</h1>
+						<div class="statement-sub">
+							<p>
+								I focus on server-side architecture, Linux production environments, and full-stack execution with Next.js &amp; TypeScript. Currently building software at Harmoni and managing server infrastructure at PT CITI PLUMB.
+							</p>
+						</div>
+					</div>
+
+					<div class="hero-portrait">
+						<div class="portrait-frame">
+							<img
+								src="/avatar.jpg"
+								alt={`Photo of ${name}`}
+								class="portrait-img"
+								width="220"
+								height="220"
+								loading="eager"
+							/>
+						</div>
+						<div class="portrait-meta">
+							<span class="portrait-name">{name}</span>
+							<span class="portrait-handle">@redoamain</span>
+						</div>
+					</div>
+				</div>
+
+				<div class="hero-meta-strip">
+					<div class="meta-item">
+						<span class="meta-label">CURRENT ROLES</span>
+						<span class="meta-val">Harmoni Software House &amp; PT CITI PLUMB</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">SPECIALTY</span>
+						<span class="meta-val">Linux Servers, PostgreSQL, Docker, TypeScript</span>
+					</div>
+					<div class="meta-item">
+						<span class="meta-label">CONNECT</span>
+						<div class="meta-links">
+							{profile?.email && (
+								<a href={`mailto:${profile.email}`} class="action-link">Email ↗</a>
+							)}
+							{profile?.socials?.map((s) => (
+								<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
+									{s.label} ↗
+								</a>
+							))}
+						</div>
 					</div>
 				</div>
 			</section>
 
-			{/* ---------- PROJECTS ---------- */}
-			<section id="projects" class="rbox">
-				<div class="rbox-bar">
-					<span class="rbox-ico"><Icon name="folder" size={15} /></span>
-					<span>Projects ({projects.length})</span>
-				</div>
-				<div class="rbox-body">
-					{projects.length === 0 && <p class="empty-note">No projects to show yet.</p>}
+			<!-- Selected Works Section -->
+			<section id="projects" class="editorial-section">
+				<div class="section-topbar">
+					<div class="topbar-left">
+						<h2 class="section-title">Selected Works</h2>
+						<span class="section-count">({projects.length})</span>
+					</div>
 
-					{projects.length > 0 && (
-						<div class="proj-container">
-							{/* Retro Toolbar */}
-							<div class="proj-toolbar">
-								<div class="proj-toolbar-header">
-									<span class="proj-status">
-										<Icon name="terminal" size={12} /> DIRECTORY: /PROJECTS
-									</span>
-									<span class="proj-counter-badge" id="projVisibleCount">
-										Showing {projects.length} of {projects.length}
-									</span>
-								</div>
-								{allTags.length > 0 && (
-									<div class="proj-filter-row">
-										<span class="filter-label">
-											<Icon name="tag" size={12} /> FILTER:
-										</span>
-										<div class="filter-pills" role="tablist" aria-label="Filter projects by tag">
-											<button
-												type="button"
-												class="filter-btn active"
-												data-filter="all"
-												aria-pressed="true"
-											>
-												ALL <span class="tag-count">[{projects.length}]</span>
-											</button>
-											{allTags.map((tag) => {
-												const count = projects.filter((p) => p.tags?.includes(tag)).length;
-												return (
-													<button
-														type="button"
-														class="filter-btn"
-														data-filter={tag}
-														aria-pressed="false"
-													>
-														{tag} <span class="tag-count">[{count}]</span>
-													</button>
-												);
-											})}
-										</div>
-									</div>
-								)}
-							</div>
-
-							{/* Projects Grid */}
-							<div class="proj-grid" id="projGrid">
-								{projects.map((p, idx) => (
-									<article
-										class="proj-card"
-										data-tags={(p.tags ?? []).join(',')}
-										data-id={p._id}
-									>
-										<div class="proj-card-header">
-											<div class="proj-card-dots">
-												<span class="dot" aria-hidden="true"></span>
-												<span class="proj-card-id">
-													PROJ_{String(idx + 1).padStart(2, '0')}.APP
-												</span>
-											</div>
-											{p.liveUrl ? (
-												<span class="status-indicator live">● ONLINE</span>
-											) : p.repoUrl ? (
-												<span class="status-indicator repo">● REPO</span>
-											) : (
-												<span class="status-indicator idle">● ARCHIVE</span>
-											)}
-										</div>
-
-										<div class="proj-img-wrap">
-											{p.coverImage?.asset ? (
-												<a
-													href={projectUrl(p) ?? '#'}
-													target="_blank"
-													rel="noreferrer"
-													class="proj-img-link"
-													tabindex="-1"
-													aria-label={`Open preview for ${p.title}`}
-												>
-													<img
-														src={imageUrl(p.coverImage, 700) ?? ''}
-														alt={p.title ?? 'Project preview'}
-														loading="lazy"
-													/>
-												</a>
-											) : (
-												<div class="no-img">
-													<Icon name="code" size={24} />
-													<span>NO PREVIEW</span>
-												</div>
-											)}
-										</div>
-
-										<div class="proj-body">
-											<h3 class="proj-title">
-												<button
-													type="button"
-													class="proj-title-btn"
-													data-open-modal={`modal-${p._id}`}
-													aria-label={`View details for ${p.title}`}
-												>
-													{p.title}
-												</button>
-											</h3>
-
-											{p.summary && <p class="proj-summary">{p.summary}</p>}
-
-											{p.tags && p.tags.length > 0 && (
-												<ul class="proj-tags" aria-label="Project technologies">
-													{p.tags.map((t) => (
-														<li>
-															<Icon name="tag" size={10} /> {t}
-														</li>
-													))}
-												</ul>
-											)}
-
-											<div class="proj-links">
-												{p.liveUrl && (
-													<a
-														href={p.liveUrl}
-														target="_blank"
-														rel="noreferrer"
-														class="proj-btn proj-btn-primary"
-													>
-														<Icon name="external-link" size={12} /> Live
-													</a>
-												)}
-												{p.repoUrl && (
-													<a
-														href={p.repoUrl}
-														target="_blank"
-														rel="noreferrer"
-														class="proj-btn"
-													>
-														<Icon name="code" size={12} /> Source
-													</a>
-												)}
-												<button
-													type="button"
-													class="proj-btn proj-btn-details"
-													data-open-modal={`modal-${p._id}`}
-													aria-label={`Details for ${p.title}`}
-												>
-													<Icon name="info" size={12} /> Details
-												</button>
-											</div>
-										</div>
-									</article>
-								))}
-							</div>
-
-							{/* Empty state when no filter matches */}
-							<div id="projNoResults" class="proj-empty-state" style="display: none;">
-								<Icon name="terminal" size={22} />
-								<p>No projects match the selected filter.</p>
-								<button type="button" class="proj-btn" id="resetFilterBtn">
-									Reset Filter
+					{/* Tag Filter Pills */}
+					{allTags.length > 0 && (
+						<div class="filter-capsules" role="tablist" aria-label="Filter works by technology">
+							<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+								All
+							</button>
+							{allTags.map((tag) => (
+								<button type="button" class="filter-btn" data-filter={tag} aria-pressed="false">
+									{tag}
 								</button>
-							</div>
-
-							{/* Retro Dialogs for Project Details */}
-							{projects.map((p) => (
-								<dialog id={`modal-${p._id}`} class="retro-dialog" aria-labelledby={`modal-title-${p._id}`}>
-									<div class="retro-dialog-titlebar">
-										<div class="retro-dialog-title" id={`modal-title-${p._id}`}>
-											<Icon name="folder" size={13} />
-											<span>PROPERTIES — {p.title}</span>
-										</div>
-										<button
-											type="button"
-											class="retro-dialog-close"
-											data-close-modal
-											aria-label="Close dialog"
-										>
-											<Icon name="x" size={12} />
-										</button>
-									</div>
-
-									<div class="retro-dialog-body">
-										{p.coverImage?.asset && (
-											<img
-												src={imageUrl(p.coverImage, 900) ?? ''}
-												alt={p.title ?? 'Project cover'}
-												class="retro-dialog-img"
-											/>
-										)}
-
-										<h2 class="retro-dialog-title-h2">{p.title}</h2>
-
-										{p.summary && <p class="retro-dialog-summary">{p.summary}</p>}
-
-										{p.tags && p.tags.length > 0 && (
-											<div class="retro-dialog-meta">
-												<span class="meta-label">Tags:</span>
-												<ul class="proj-tags" style="display: inline-flex; margin: 0;">
-													{p.tags.map((t) => (
-														<li>
-															<Icon name="tag" size={10} /> {t}
-														</li>
-													))}
-												</ul>
-											</div>
-										)}
-
-										{p.description && p.description.length > 0 ? (
-											<div class="retro-dialog-desc pt-content">
-												<PortableText value={p.description} />
-											</div>
-										) : (
-											<p class="empty-note">No additional description available.</p>
-										)}
-
-										<div class="retro-dialog-actions">
-											{p.liveUrl && (
-												<a
-													href={p.liveUrl}
-													target="_blank"
-													rel="noreferrer"
-													class="proj-btn proj-btn-primary"
-												>
-													<Icon name="external-link" size={13} /> Visit Live Demo
-												</a>
-											)}
-											{p.repoUrl && (
-												<a
-													href={p.repoUrl}
-													target="_blank"
-													rel="noreferrer"
-													class="proj-btn"
-												>
-													<Icon name="code" size={13} /> View Source Code
-												</a>
-											)}
-											<button
-												type="button"
-												class="proj-btn"
-												data-close-modal
-											>
-												<Icon name="x" size={13} /> Close Window
-											</button>
-										</div>
-									</div>
-								</dialog>
 							))}
 						</div>
 					)}
 				</div>
-			</section>
 
-			{/* ---------- EXPERIENCE ---------- */}
-			<section id="experience" class="rbox">
-				<div class="rbox-bar">
-					<span class="rbox-ico"><Icon name="briefcase" size={15} /></span>
-					<span>Work Experience</span>
-				</div>
-				<div class="rbox-body">
-					{experiences.length === 0 && <p class="empty-note">No work experience yet.</p>}
-					<ul class="exp-list">
-						{experiences.map((e) => (
-							<li class="exp-item">
-								<div class="exp-date">
-									{formatMonthYear(e.startDate)}
-									{' – '}
-									{e.current ? <span class="now">Present</span> : formatMonthYear(e.endDate)}
-								</div>
-								<div class="exp-main">
-									<h3>
-										{e.position} <span class="at">@ {e.company}</span>
+				<!-- Project List / Editorial Showcase -->
+				<div class="works-list" id="worksContainer">
+					{projects.map((p, idx) => (
+						<article class="work-entry" data-tags={(p.tags ?? []).join(',')} data-id={p._id}>
+							<div class="work-header">
+								<div class="work-index">0{idx + 1}</div>
+								<div class="work-heading-wrap">
+									<h3 class="work-name">
+										<button
+											type="button"
+											class="work-title-link"
+											data-open-modal={`modal-${p._id}`}
+											aria-label={`View details for ${p.title}`}
+										>
+											{p.title}
+										</button>
 									</h3>
-									{e.location && (
-										<div class="loc">
-											<Icon name="map-pin" size={11} /> {e.location}
-										</div>
-									)}
-									{e.summary && <p>{e.summary}</p>}
-									{e.tags && e.tags.length > 0 && (
-										<ul class="exp-tags">
-											{e.tags.map((t) => <li>{t}</li>)}
-										</ul>
-									)}
+									{p.summary && <p class="work-desc">{p.summary}</p>}
 								</div>
-							</li>
-						))}
-					</ul>
+								<div class="work-actions">
+									{p.liveUrl && (
+										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+											<span>Live</span>
+											<Icon name="arrow-up-right" size={13} />
+										</a>
+									)}
+									{p.repoUrl && (
+										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+											<span>Source</span>
+											<Icon name="arrow-up-right" size={13} />
+										</a>
+									)}
+									<button
+										type="button"
+										class="action-link-btn details-btn"
+										data-open-modal={`modal-${p._id}`}
+									>
+										<span>Overview</span>
+										<Icon name="info" size={13} />
+									</button>
+								</div>
+							</div>
+
+							<!-- Visual Media -->
+							{p.coverImage?.asset && (
+								<div class="work-visual">
+									<a
+										href={projectUrl(p) ?? '#'}
+										target="_blank"
+										rel="noreferrer"
+										tabindex="-1"
+										aria-label={`Screenshot of ${p.title}`}
+										class="visual-link"
+									>
+										<img
+											src={imageUrl(p.coverImage, 1100) ?? ''}
+											alt={p.title ?? 'Project screenshot'}
+											loading="lazy"
+											class="visual-img"
+										/>
+									</a>
+								</div>
+							)}
+
+							<!-- Stack tags -->
+							{p.tags && p.tags.length > 0 && (
+								<div class="work-footer-tags">
+									<span class="tags-prefix">Stack:</span>
+									<div class="tags-row">
+										{p.tags.map((t) => (
+											<span class="spec-tag">{t}</span>
+										))}
+									</div>
+								</div>
+							)}
+						</article>
+					))}
+				</div>
+
+				<!-- Filter empty state -->
+				<div id="noResultsMsg" class="editorial-empty" style="display: none;">
+					<p>No projects match this technology filter.</p>
+					<button type="button" class="action-link" id="resetFilter">Show all works →</button>
+				</div>
+
+				<!-- Detail Modals -->
+				{projects.map((p) => (
+					<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
+						<div class="dialog-inner">
+							<div class="dialog-top">
+								<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+								<button type="button" class="dialog-close" data-close-modal aria-label="Close dialog">
+									<Icon name="x" size={18} />
+								</button>
+							</div>
+
+							<div class="dialog-scroll">
+								{p.coverImage?.asset && (
+									<div class="dialog-media-frame">
+										<img
+											src={imageUrl(p.coverImage, 1100) ?? ''}
+											alt={p.title ?? 'Project full view'}
+											class="dialog-cover-img"
+										/>
+									</div>
+								)}
+
+								{p.summary && <p class="dialog-lead">{p.summary}</p>}
+
+								{p.tags && p.tags.length > 0 && (
+									<div class="dialog-spec-row">
+										<span class="spec-label">Technologies:</span>
+										<div class="spec-pills">
+											{p.tags.map((t) => (
+												<span class="spec-tag">{t}</span>
+											))}
+										</div>
+									</div>
+								)}
+
+								{p.description && p.description.length > 0 && (
+									<div class="dialog-body-prose">
+										<PortableText value={p.description} />
+									</div>
+								)}
+
+								<div class="dialog-links-row">
+									{p.liveUrl && (
+										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="button-solid">
+											<span>Visit Live Site</span>
+											<Icon name="arrow-up-right" size={14} />
+										</a>
+									)}
+									{p.repoUrl && (
+										<a href={p.repoUrl} target="_blank" rel="noreferrer" class="button-outline">
+											<span>View Repository</span>
+											<Icon name="arrow-up-right" size={14} />
+										</a>
+									)}
+									<button type="button" class="button-ghost" data-close-modal>
+										Close
+									</button>
+								</div>
+							</div>
+						</div>
+					</dialog>
+				))}
+			</section>
+
+			<!-- Experience & Background -->
+			<section id="experience" class="editorial-section">
+				<div class="section-topbar">
+					<h2 class="section-title">Experience &amp; Roles</h2>
+				</div>
+
+				<div class="experience-table">
+					{experiences.map((e) => (
+						<div class="exp-row">
+							<div class="exp-col-date">
+								<span class="exp-time">
+									{formatMonthYear(e.startDate)} — {e.current ? 'Present' : formatMonthYear(e.endDate)}
+								</span>
+								{e.location && <span class="exp-loc">{e.location}</span>}
+							</div>
+
+							<div class="exp-col-role">
+								<h3 class="exp-position">{e.position}</h3>
+								<span class="exp-company">@ {e.company}</span>
+							</div>
+
+							<div class="exp-col-summary">
+								{e.summary && <p>{e.summary}</p>}
+								{e.tags && e.tags.length > 0 && (
+									<div class="exp-tags-list">
+										{e.tags.map((t) => (
+											<span class="spec-tag">{t}</span>
+										))}
+									</div>
+								)}
+							</div>
+						</div>
+					))}
 				</div>
 			</section>
 
-			{/* ---------- CONTACT / GUESTBOOK ---------- */}
-			<section id="contact" class="rbox">
-				<div class="rbox-bar">
-					<span class="rbox-ico"><Icon name="mail" size={15} /></span>
-					<span>Guestbook &amp; Contact</span>
+			<!-- About & Engineering Approach -->
+			<section id="about" class="editorial-section">
+				<div class="section-topbar">
+					<h2 class="section-title">About &amp; Approach</h2>
 				</div>
-				<div class="rbox-body">
-					<p>Want to work together or just say hello? Drop a message anytime.</p>
-					<div class="guestbook-actions">
-						{profile?.email && (
-							<a class="xbtn" href={`mailto:${profile.email}?subject=Hello ${nick}!`}>
-								<Icon name="pen-line" size={14} /> Send a message
-							</a>
+
+				<div class="about-grid">
+					<div class="about-prose">
+						{profile?.bio ? (
+							<PortableText value={profile.bio} />
+						) : (
+							<p>
+								I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
+								I specialize in scalable backend systems, Linux servers, and end-to-end web deployment.
+							</p>
 						)}
-						{profile?.socials && profile.socials.length > 0 && (
-							<div class="social-links">
+					</div>
+
+					<div class="about-aside">
+						<h3 class="aside-heading">Core Competencies</h3>
+						<ul class="aside-list">
+							<li>
+								<strong>System Architecture</strong>
+								<span>Designing data contracts, RESTful interfaces, and modular backend services.</span>
+							</li>
+							<li>
+								<strong>Linux &amp; Server Infrastructure</strong>
+								<span>Server security, Docker container orchestration, deployment automation, and process monitoring.</span>
+							</li>
+							<li>
+								<strong>Database Engineering</strong>
+								<span>Relational data modeling with PostgreSQL, indexing, query optimization, and cache management.</span>
+							</li>
+							<li>
+								<strong>Full-Stack Frontend</strong>
+								<span>Next.js, Tailwind CSS, and TypeScript for responsive, accessible user interfaces.</span>
+							</li>
+						</ul>
+					</div>
+				</div>
+			</section>
+
+			<!-- Contact / Get in touch -->
+			<section id="contact" class="editorial-section contact-section">
+				<div class="section-topbar">
+					<h2 class="section-title">Get in Touch</h2>
+				</div>
+
+				<div class="contact-box">
+					<p class="contact-intro">
+						If you have a backend infrastructure challenge, a project inquiry, or want to discuss technical collaboration, write directly:
+					</p>
+
+					{profile?.email && (
+						<div class="contact-email-row">
+							<a href={`mailto:${profile.email}`} class="big-email-link">
+								{profile.email}
+							</a>
+							<button
+								type="button"
+								class="copy-btn"
+								id="copyEmailBtn"
+								data-email={profile.email}
+								title="Copy email to clipboard"
+							>
+								<span id="copyStatus">Copy Address</span>
+							</button>
+						</div>
+					)}
+
+					{profile?.socials && profile.socials.length > 0 && (
+						<div class="contact-social-row">
+							<span class="social-caption">Elsewhere:</span>
+							<div class="social-links-list">
 								{profile.socials.map((s) => (
-									<a href={s.url ?? '#'} target="_blank" rel="noreferrer">
-										<Icon name={socialIcon(s.label)} size={14} /> {s.label}
+									<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
+										{s.label} ↗
 									</a>
 								))}
 							</div>
-						)}
-					</div>
-					{profile?.email && (
-						<p class="email-big">
-							email : <a href={`mailto:${profile.email}`}>{profile.email}</a>
-						</p>
+						</div>
 					)}
 				</div>
 			</section>
+		</main>
 
-			{/* ---------- footer ---------- */}
-			<footer class="footer">
-				<p class="footer-copy">
-					&copy; 2002–{year} {name} ({nick}) — Powered by Astro + Sanity
-				</p>
-				<p class="footer-copy">
-					<a class="to-top" href="#top">
-						<Icon name="arrow-up" size={12} /> Back to top
-					</a>
-				</p>
-				<p class="footer-copy" style="font-size: 11px; opacity: 0.7; margin-top: 6px;">
-					Best viewed with Netscape Navigator 4.0 or Internet Explorer 5.0
-				</p>
-			</footer>
-		</div>
+		<!-- Footer -->
+		<footer class="page-footer">
+			<div class="footer-wrapper">
+				<div class="footer-col">
+					<span>{name}</span>
+					<span class="footer-dot">·</span>
+					<span>© {year}</span>
+				</div>
+				<div class="footer-col">
+					<span class="footer-quiet" id="visitorCounter">Visitor #{visitorNo}</span>
+				</div>
+				<div class="footer-col">
+					<a href="#" class="back-top-link">Back to top ↑</a>
+				</div>
+			</div>
+		</footer>
 	</body>
 </html>
 
 <script>
-	// Mobile menu toggle
-	const menuToggle = document.getElementById('menuToggle');
-	const menuList = document.getElementById('menuList');
-
-	if (menuToggle && menuList) {
-		menuToggle.addEventListener('click', () => {
-			const isExpanded = menuToggle.getAttribute('aria-expanded') === 'true';
-			menuToggle.setAttribute('aria-expanded', !isExpanded);
-			menuList.classList.toggle('menu-open');
-		});
-
-		// Close menu when a link is clicked (on mobile)
-		menuList.querySelectorAll('a').forEach(link => {
-			link.addEventListener('click', () => {
-				menuToggle.setAttribute('aria-expanded', 'false');
-				menuList.classList.remove('menu-open');
-			});
+	// Dark / Light Theme Toggle
+	const themeBtn = document.getElementById('themeToggle');
+	if (themeBtn) {
+		themeBtn.addEventListener('click', () => {
+			const current = document.documentElement.getAttribute('data-theme') || 'dark';
+			const next = current === 'dark' ? 'light' : 'dark';
+			document.documentElement.setAttribute('data-theme', next);
+			localStorage.setItem('theme', next);
 		});
 	}
 
-	// Retro Filter for the Projects section
-	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-	const projectCards = document.querySelectorAll<HTMLElement>('.proj-card');
-	const counterBadge = document.getElementById('projVisibleCount');
-	const noResults = document.getElementById('projNoResults');
-	const resetBtn = document.getElementById('resetFilterBtn');
+	// Filter Works
+	const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+	const workEntries = document.querySelectorAll<HTMLElement>('.work-entry');
+	const noResults = document.getElementById('noResultsMsg');
+	const resetBtn = document.getElementById('resetFilter');
 
 	const applyFilter = (filter: string) => {
-		filterButtons.forEach((btn) => {
+		filterBtns.forEach((btn) => {
 			const isActive = btn.dataset.filter === filter;
 			btn.classList.toggle('active', isActive);
 			btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 		});
 
-		let visibleCount = 0;
-		projectCards.forEach((card) => {
-			const rawTags = card.dataset.tags || '';
-			const tags = rawTags.split(',').map((t) => t.trim());
-			const isMatch = filter === 'all' || tags.includes(filter);
-			if (isMatch) {
-				card.style.display = 'flex';
-				visibleCount++;
+		let visible = 0;
+		workEntries.forEach((entry) => {
+			const tags = (entry.dataset.tags || '').split(',').map((t) => t.trim());
+			const match = filter === 'all' || tags.includes(filter);
+			if (match) {
+				entry.style.display = '';
+				visible++;
 			} else {
-				card.style.display = 'none';
+				entry.style.display = 'none';
 			}
 		});
 
-		if (counterBadge) {
-			counterBadge.textContent = `Showing ${visibleCount} of ${projectCards.length}`;
-		}
 		if (noResults) {
-			noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+			noResults.style.display = visible === 0 ? 'block' : 'none';
 		}
 	};
 
-	filterButtons.forEach((btn) => {
+	filterBtns.forEach((btn) => {
 		btn.addEventListener('click', () => {
-			const filter = btn.dataset.filter ?? 'all';
-			applyFilter(filter);
+			applyFilter(btn.dataset.filter ?? 'all');
 		});
 	});
 
@@ -582,7 +531,7 @@ const socialIcon = (label: string | null | undefined): string => {
 		});
 	}
 
-	// Retro Modal Dialogs for Project Details
+	// Modal Dialog Handling
 	document.querySelectorAll<HTMLElement>('[data-open-modal]').forEach((btn) => {
 		btn.addEventListener('click', () => {
 			const modalId = btn.dataset.openModal;
@@ -605,16 +554,15 @@ const socialIcon = (label: string | null | undefined): string => {
 		});
 	});
 
-	document.querySelectorAll<HTMLDialogElement>('dialog.retro-dialog').forEach((modal) => {
-		// Close on backdrop click
+	document.querySelectorAll<HTMLDialogElement>('dialog.editorial-dialog').forEach((modal) => {
 		modal.addEventListener('click', (e) => {
 			const rect = modal.getBoundingClientRect();
-			const isInDialog =
+			const inDialog =
 				rect.top <= e.clientY &&
 				e.clientY <= rect.top + rect.height &&
 				rect.left <= e.clientX &&
 				e.clientX <= rect.left + rect.width;
-			if (!isInDialog) {
+			if (!inDialog) {
 				modal.close();
 				document.body.style.overflow = '';
 			}
@@ -624,9 +572,26 @@ const socialIcon = (label: string | null | undefined): string => {
 		});
 	});
 
-	// Real visitor counter — tiap page load / refresh = +1.
-	// GET /api/visits (Vercel Function) increment atomik di Sanity `siteStats`.
-	// Gagal (mis. astro dev lokal tanpa function) → biarkan angka fallback.
+	// Email copy to clipboard
+	const copyEmailBtn = document.getElementById('copyEmailBtn');
+	const copyStatus = document.getElementById('copyStatus');
+	if (copyEmailBtn && copyStatus) {
+		copyEmailBtn.addEventListener('click', async () => {
+			const email = copyEmailBtn.dataset.email;
+			if (!email) return;
+			try {
+				await navigator.clipboard.writeText(email);
+				copyStatus.textContent = 'Copied to clipboard!';
+				setTimeout(() => {
+					copyStatus.textContent = 'Copy Address';
+				}, 2200);
+			} catch {
+				window.location.href = `mailto:${email}`;
+			}
+		});
+	}
+
+	// Live visits counter
 	(async () => {
 		const el = document.getElementById('visitorCounter');
 		if (!el) return;
@@ -635,19 +600,9 @@ const socialIcon = (label: string | null | undefined): string => {
 			if (!res.ok) return;
 			const { visits } = await res.json();
 			if (typeof visits !== 'number') return;
-			const digits = String(Math.max(0, visits)).padStart(6, '0').split('');
-			el.setAttribute('aria-label', `Visitor number ${digits.join('')}`);
-			el.innerHTML = '';
-			digits.forEach((d, i) => {
-				const cell = document.createElement('i');
-				// Digit "berjatuhan" satu per satu ala rolling counter retro.
-				setTimeout(() => {
-					cell.textContent = d;
-					el.appendChild(cell);
-				}, 90 * i);
-			});
+			el.textContent = `Visitor #${String(Math.max(0, visits)).padStart(6, '0')}`;
 		} catch {
-			/* abaikan — tampilkan fallback */
+			/* fallback remains */
 		}
 	})();
 </script>
