@@ -27,13 +27,10 @@ const visitorNo = String(
 // Fallback saat /api/visits belum tersedia (mis. astro dev lokal).
 // Di production (Vercel), angka ini langsung diganti hasil fetch real-time.
 
-// --- projects pagination ---
-const PROJECTS_PER_PAGE = 2;
-const projectPages: { items: typeof projects }[] = [];
-for (let i = 0; i < projects.length; i += PROJECTS_PER_PAGE) {
-	projectPages.push({ items: projects.slice(i, i + PROJECTS_PER_PAGE) });
-}
-const totalPages = projectPages.length;
+// Unique tags across all projects for retro filter toolbar
+const allTags = Array.from(
+	new Set(projects.flatMap((p) => p.tags ?? []).filter(Boolean)),
+).sort();
 const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
 
 // brand icon name for social links
@@ -170,86 +167,259 @@ const socialIcon = (label: string | null | undefined): string => {
 				</div>
 			</section>
 
-			{/* ---------- PROJECTS (paginated) ---------- */}
+			{/* ---------- PROJECTS ---------- */}
 			<section id="projects" class="rbox">
 				<div class="rbox-bar">
 					<span class="rbox-ico"><Icon name="folder" size={15} /></span>
-					<span>Projects</span>
+					<span>Projects ({projects.length})</span>
 				</div>
 				<div class="rbox-body">
 					{projects.length === 0 && <p class="empty-note">No projects to show yet.</p>}
 
-					{totalPages > 0 && (
-						<div class="proj-pager-wrap" data-total-pages={totalPages}>
-							<div class="proj-pages">
-								{projectPages.map((page, pageIndex) => (
-									<div class="proj-page" data-page={pageIndex}>
-										<div class="proj-grid">
-											{page.items.map((p) => (
-												<article class="proj-card">
-													{p.coverImage?.asset ? (
-														<a href={projectUrl(p) ?? '#'} target="_blank" rel="noreferrer">
-															<img
-																src={imageUrl(p.coverImage, 600) ?? ''}
-																alt={p.title ?? 'Project preview'}
-																loading="lazy"
-															/>
-														</a>
-													) : (
-														<div class="no-img">NO PREVIEW</div>
-													)}
-													<div class="proj-body">
-														<h3>{p.title}</h3>
-														{p.summary && <p>{p.summary}</p>}
-														{p.tags && p.tags.length > 0 && (
-															<ul class="proj-tags">
-																{p.tags.map((t) => <li>{t}</li>)}
-															</ul>
-														)}
-														<div class="proj-links">
-															{p.liveUrl && (
-																<a href={p.liveUrl} target="_blank" rel="noreferrer">
-																	<Icon name="external-link" size={12} /> Live
-																</a>
-															)}
-															{p.repoUrl && (
-																<a href={p.repoUrl} target="_blank" rel="noreferrer">
-																	<Icon name="code" size={12} /> Source
-																</a>
-															)}
-														</div>
-													</div>
-												</article>
-											))}
+					{projects.length > 0 && (
+						<div class="proj-container">
+							{/* Retro Toolbar */}
+							<div class="proj-toolbar">
+								<div class="proj-toolbar-header">
+									<span class="proj-status">
+										<Icon name="terminal" size={12} /> DIRECTORY: /PROJECTS
+									</span>
+									<span class="proj-counter-badge" id="projVisibleCount">
+										Showing {projects.length} of {projects.length}
+									</span>
+								</div>
+								{allTags.length > 0 && (
+									<div class="proj-filter-row">
+										<span class="filter-label">
+											<Icon name="tag" size={12} /> FILTER:
+										</span>
+										<div class="filter-pills" role="tablist" aria-label="Filter projects by tag">
+											<button
+												type="button"
+												class="filter-btn active"
+												data-filter="all"
+												aria-pressed="true"
+											>
+												ALL <span class="tag-count">[{projects.length}]</span>
+											</button>
+											{allTags.map((tag) => {
+												const count = projects.filter((p) => p.tags?.includes(tag)).length;
+												return (
+													<button
+														type="button"
+														class="filter-btn"
+														data-filter={tag}
+														aria-pressed="false"
+													>
+														{tag} <span class="tag-count">[{count}]</span>
+													</button>
+												);
+											})}
 										</div>
 									</div>
+								)}
+							</div>
+
+							{/* Projects Grid */}
+							<div class="proj-grid" id="projGrid">
+								{projects.map((p, idx) => (
+									<article
+										class="proj-card"
+										data-tags={(p.tags ?? []).join(',')}
+										data-id={p._id}
+									>
+										<div class="proj-card-header">
+											<div class="proj-card-dots">
+												<span class="dot" aria-hidden="true"></span>
+												<span class="proj-card-id">
+													PROJ_{String(idx + 1).padStart(2, '0')}.APP
+												</span>
+											</div>
+											{p.liveUrl ? (
+												<span class="status-indicator live">● ONLINE</span>
+											) : p.repoUrl ? (
+												<span class="status-indicator repo">● REPO</span>
+											) : (
+												<span class="status-indicator idle">● ARCHIVE</span>
+											)}
+										</div>
+
+										<div class="proj-img-wrap">
+											{p.coverImage?.asset ? (
+												<a
+													href={projectUrl(p) ?? '#'}
+													target="_blank"
+													rel="noreferrer"
+													class="proj-img-link"
+													tabindex="-1"
+													aria-label={`Open preview for ${p.title}`}
+												>
+													<img
+														src={imageUrl(p.coverImage, 700) ?? ''}
+														alt={p.title ?? 'Project preview'}
+														loading="lazy"
+													/>
+												</a>
+											) : (
+												<div class="no-img">
+													<Icon name="code" size={24} />
+													<span>NO PREVIEW</span>
+												</div>
+											)}
+										</div>
+
+										<div class="proj-body">
+											<h3 class="proj-title">
+												<button
+													type="button"
+													class="proj-title-btn"
+													data-open-modal={`modal-${p._id}`}
+													aria-label={`View details for ${p.title}`}
+												>
+													{p.title}
+												</button>
+											</h3>
+
+											{p.summary && <p class="proj-summary">{p.summary}</p>}
+
+											{p.tags && p.tags.length > 0 && (
+												<ul class="proj-tags" aria-label="Project technologies">
+													{p.tags.map((t) => (
+														<li>
+															<Icon name="tag" size={10} /> {t}
+														</li>
+													))}
+												</ul>
+											)}
+
+											<div class="proj-links">
+												{p.liveUrl && (
+													<a
+														href={p.liveUrl}
+														target="_blank"
+														rel="noreferrer"
+														class="proj-btn proj-btn-primary"
+													>
+														<Icon name="external-link" size={12} /> Live
+													</a>
+												)}
+												{p.repoUrl && (
+													<a
+														href={p.repoUrl}
+														target="_blank"
+														rel="noreferrer"
+														class="proj-btn"
+													>
+														<Icon name="code" size={12} /> Source
+													</a>
+												)}
+												<button
+													type="button"
+													class="proj-btn proj-btn-details"
+													data-open-modal={`modal-${p._id}`}
+													aria-label={`Details for ${p.title}`}
+												>
+													<Icon name="info" size={12} /> Details
+												</button>
+											</div>
+										</div>
+									</article>
 								))}
 							</div>
 
-							{totalPages > 1 && (
-								<nav class="pager" aria-label="Projects pagination">
-									<button type="button" class="pager-btn" data-pager="prev" aria-label="Previous page">
-										<Icon name="chevron-left" size={12} /> Prev
-									</button>
-									<span class="pager-nums">
-										{Array.from({ length: totalPages }, (_, i) => i + 1).map((n) => (
+							{/* Empty state when no filter matches */}
+							<div id="projNoResults" class="proj-empty-state" style="display: none;">
+								<Icon name="terminal" size={22} />
+								<p>No projects match the selected filter.</p>
+								<button type="button" class="proj-btn" id="resetFilterBtn">
+									Reset Filter
+								</button>
+							</div>
+
+							{/* Retro Dialogs for Project Details */}
+							{projects.map((p) => (
+								<dialog id={`modal-${p._id}`} class="retro-dialog" aria-labelledby={`modal-title-${p._id}`}>
+									<div class="retro-dialog-titlebar">
+										<div class="retro-dialog-title" id={`modal-title-${p._id}`}>
+											<Icon name="folder" size={13} />
+											<span>PROPERTIES — {p.title}</span>
+										</div>
+										<button
+											type="button"
+											class="retro-dialog-close"
+											data-close-modal
+											aria-label="Close dialog"
+										>
+											<Icon name="x" size={12} />
+										</button>
+									</div>
+
+									<div class="retro-dialog-body">
+										{p.coverImage?.asset && (
+											<img
+												src={imageUrl(p.coverImage, 900) ?? ''}
+												alt={p.title ?? 'Project cover'}
+												class="retro-dialog-img"
+											/>
+										)}
+
+										<h2 class="retro-dialog-title-h2">{p.title}</h2>
+
+										{p.summary && <p class="retro-dialog-summary">{p.summary}</p>}
+
+										{p.tags && p.tags.length > 0 && (
+											<div class="retro-dialog-meta">
+												<span class="meta-label">Tags:</span>
+												<ul class="proj-tags" style="display: inline-flex; margin: 0;">
+													{p.tags.map((t) => (
+														<li>
+															<Icon name="tag" size={10} /> {t}
+														</li>
+													))}
+												</ul>
+											</div>
+										)}
+
+										{p.description && p.description.length > 0 ? (
+											<div class="retro-dialog-desc pt-content">
+												<PortableText value={p.description} />
+											</div>
+										) : (
+											<p class="empty-note">No additional description available.</p>
+										)}
+
+										<div class="retro-dialog-actions">
+											{p.liveUrl && (
+												<a
+													href={p.liveUrl}
+													target="_blank"
+													rel="noreferrer"
+													class="proj-btn proj-btn-primary"
+												>
+													<Icon name="external-link" size={13} /> Visit Live Demo
+												</a>
+											)}
+											{p.repoUrl && (
+												<a
+													href={p.repoUrl}
+													target="_blank"
+													rel="noreferrer"
+													class="proj-btn"
+												>
+													<Icon name="code" size={13} /> View Source Code
+												</a>
+											)}
 											<button
 												type="button"
-												class="pager-btn pager-num"
-												data-pager="num"
-												data-page={n - 1}
-												aria-current={n === 1 ? 'page' : undefined}
+												class="proj-btn"
+												data-close-modal
 											>
-												{n}
+												<Icon name="x" size={13} /> Close Window
 											</button>
-										))}
-									</span>
-									<button type="button" class="pager-btn" data-pager="next" aria-label="Next page">
-										Next <Icon name="chevron-right" size={12} />
-									</button>
-									<span class="pager-info" data-pager-info>Page 1 of {totalPages}</span>
-								</nav>
-							)}
+										</div>
+									</div>
+								</dialog>
+							))}
 						</div>
 					)}
 				</div>
@@ -364,45 +534,95 @@ const socialIcon = (label: string | null | undefined): string => {
 		});
 	}
 
-	// Retro pager for the Projects section
-	const wrap = document.querySelector('.proj-pager-wrap');
-	if (wrap) {
-		const pages = Array.from(wrap.querySelectorAll('.proj-page'));
-		const info = wrap.querySelector('[data-pager-info]');
-		let current = 0;
+	// Retro Filter for the Projects section
+	const filterButtons = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
+	const projectCards = document.querySelectorAll<HTMLElement>('.proj-card');
+	const counterBadge = document.getElementById('projVisibleCount');
+	const noResults = document.getElementById('projNoResults');
+	const resetBtn = document.getElementById('resetFilterBtn');
 
-		const show = (i) => {
-			current = Math.max(0, Math.min(pages.length - 1, i));
-			pages.forEach((pg, idx) => {
-				pg.style.display = idx === current ? 'block' : 'none';
-			});
-			wrap.querySelectorAll('.pager-num').forEach((btn, idx) => {
-				if (idx === current) {
-					btn.setAttribute('aria-current', 'page');
-					btn.classList.add('pager-current');
-				} else {
-					btn.removeAttribute('aria-current');
-					btn.classList.remove('pager-current');
-				}
-			});
-			const prev = wrap.querySelector('[data-pager="prev"]');
-			const next = wrap.querySelector('[data-pager="next"]');
-			if (prev) prev.disabled = current === 0;
-			if (next) next.disabled = current === pages.length - 1;
-			if (info) info.textContent = `Page ${current + 1} of ${pages.length}`;
-		};
-
-		wrap.addEventListener('click', (event) => {
-			const btn = event.target.closest('[data-pager]');
-			if (!btn) return;
-			const action = btn.dataset.pager;
-			if (action === 'prev') show(current - 1);
-			else if (action === 'next') show(current + 1);
-			else if (action === 'num') show(Number(btn.dataset.page) || 0);
+	const applyFilter = (filter: string) => {
+		filterButtons.forEach((btn) => {
+			const isActive = btn.dataset.filter === filter;
+			btn.classList.toggle('active', isActive);
+			btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
 		});
 
-		show(0);
+		let visibleCount = 0;
+		projectCards.forEach((card) => {
+			const rawTags = card.dataset.tags || '';
+			const tags = rawTags.split(',').map((t) => t.trim());
+			const isMatch = filter === 'all' || tags.includes(filter);
+			if (isMatch) {
+				card.style.display = 'flex';
+				visibleCount++;
+			} else {
+				card.style.display = 'none';
+			}
+		});
+
+		if (counterBadge) {
+			counterBadge.textContent = `Showing ${visibleCount} of ${projectCards.length}`;
+		}
+		if (noResults) {
+			noResults.style.display = visibleCount === 0 ? 'block' : 'none';
+		}
+	};
+
+	filterButtons.forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const filter = btn.dataset.filter ?? 'all';
+			applyFilter(filter);
+		});
+	});
+
+	if (resetBtn) {
+		resetBtn.addEventListener('click', () => {
+			applyFilter('all');
+		});
 	}
+
+	// Retro Modal Dialogs for Project Details
+	document.querySelectorAll<HTMLElement>('[data-open-modal]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const modalId = btn.dataset.openModal;
+			if (!modalId) return;
+			const modal = document.getElementById(modalId) as HTMLDialogElement | null;
+			if (modal && typeof modal.showModal === 'function') {
+				modal.showModal();
+				document.body.style.overflow = 'hidden';
+			}
+		});
+	});
+
+	document.querySelectorAll<HTMLElement>('[data-close-modal]').forEach((btn) => {
+		btn.addEventListener('click', () => {
+			const modal = btn.closest('dialog') as HTMLDialogElement | null;
+			if (modal) {
+				modal.close();
+				document.body.style.overflow = '';
+			}
+		});
+	});
+
+	document.querySelectorAll<HTMLDialogElement>('dialog.retro-dialog').forEach((modal) => {
+		// Close on backdrop click
+		modal.addEventListener('click', (e) => {
+			const rect = modal.getBoundingClientRect();
+			const isInDialog =
+				rect.top <= e.clientY &&
+				e.clientY <= rect.top + rect.height &&
+				rect.left <= e.clientX &&
+				e.clientX <= rect.left + rect.width;
+			if (!isInDialog) {
+				modal.close();
+				document.body.style.overflow = '';
+			}
+		});
+		modal.addEventListener('close', () => {
+			document.body.style.overflow = '';
+		});
+	});
 
 	// Real visitor counter — tiap page load / refresh = +1.
 	// GET /api/visits (Vercel Function) increment atomik di Sanity `siteStats`.

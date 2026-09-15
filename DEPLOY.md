@@ -163,7 +163,24 @@ fallback) — jadi "web jalan tapi counter mati" = salah satu baris di atas.
 - Halaman Studio 404 saat navigasi dalam (mis. refresh di `/structure/...`)
   → pastikan `studio/vercel.json` (rewrite ke `/index.html`) ter-push.
 
-### C. Konten Sanity baru tidak muncul di web
+### C. Studio terbuka tapi error `NetworkError ... (xxx.api.sanity.io)`
+
+Ini **CORS**: browser memblokir Studio di domain Vercel karena origin-nya
+belum diizinkan di project Sanity. Perbaikan (sekali saja per domain):
+
+1. Buka [manage.sanity.io](https://manage.sanity.io) → project `l9ie13zf` →
+   **API → CORS Origins → Add CORS origin**.
+2. Origin: `https://<domain-studio-kamu>.vercel.app`
+   (mis. `https://redoamain-rddo.vercel.app`), centang **Allow credentials**.
+3. Ulangi untuk domain web (`https://<domain-web>.vercel.app`) dan domain
+   custom bila ada.
+4. Refresh halaman Studio.
+
+> Catatan: URL Preview Vercel (`*.vercel.app` acak per deployment) tidak bisa
+> didaftarkan sekaligus (Sanity tidak mendukung wildcard) — tes Studio di URL
+> Production.
+
+### D. Konten Sanity baru tidak muncul di web
 
 `web` adalah static site (konten di-fetch saat build). Ikuti
 "Rebuild otomatis saat konten Sanity berubah" di bagian 1 di atas
