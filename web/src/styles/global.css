@@ -991,6 +991,50 @@ html[data-theme="light"] .theme-icon.moon { display: block; }
 	color: var(--text-muted);
 }
 
+/* Skills display from Sanity */
+.skills-grid {
+	display: flex;
+	flex-direction: column;
+	gap: 16px;
+}
+
+.skill-group {
+	display: flex;
+	flex-direction: column;
+	gap: 6px;
+}
+
+.skill-group-label {
+	font-family: var(--font-mono);
+	font-size: 11px;
+	font-weight: 600;
+	letter-spacing: 0.06em;
+	color: var(--text-dim);
+	text-transform: uppercase;
+}
+
+.skill-group-pills {
+	display: flex;
+	flex-wrap: wrap;
+	gap: 6px;
+}
+
+.skill-pill {
+	font-family: var(--font-mono);
+	font-size: 12px;
+	background: var(--bg-subtle);
+	border: 1px solid var(--border);
+	padding: 3px 9px;
+	border-radius: 4px;
+	color: var(--text-main);
+	transition: all 0.15s ease;
+}
+
+.skill-pill:hover {
+	border-color: var(--border-strong);
+	background: var(--surface);
+}
+
 /* ---- Contact Section ---- */
 .contact-section {
 	padding-bottom: 40px;

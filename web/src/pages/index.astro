@@ -7,19 +7,45 @@ import {
 	getExperiences,
 	getProfile,
 	getProjects,
+	getSkills,
 	imageUrl,
 } from '../lib/sanity';
 
-const [profile, projects, experiences] = await Promise.all([
+const [profile, projects, experiences, skills] = await Promise.all([
 	getProfile(),
 	getProjects(),
 	getExperiences(),
+	getSkills(),
 ]);
 
 const name = profile?.name ?? 'Redho Arifin';
 const nick = profile?.nickname ?? 'Redo';
 const role = profile?.role ?? 'Backend Developer';
 const year = new Date().getFullYear();
+
+// Avatar URL directly from Sanity asset, falling back to local /avatar.jpg
+const avatarUrl = imageUrl(profile?.avatar, 440) ?? '/avatar.jpg';
+
+// Current roles derived from active experiences in Sanity Studio
+const currentRoles = experiences
+	.filter((e) => e.current)
+	.map((e) => e.company)
+	.filter(Boolean)
+	.join(' & ') || 'Harmoni Software House & PT CITI PLUMB';
+
+// Key specialties derived from Sanity Studio skills
+const specialties = skills.length > 0
+	? skills.slice(0, 5).map((s) => s.name).filter(Boolean).join(', ')
+	: 'Linux Servers, PostgreSQL, Docker, TypeScript';
+
+// Skill categories for the About & Skills section
+const skillCategories = [
+	{ key: 'backend', label: 'Backend' },
+	{ key: 'database', label: 'Database' },
+	{ key: 'devops', label: 'DevOps & Systems' },
+	{ key: 'frontend', label: 'Frontend' },
+	{ key: 'mobile', label: 'Mobile' },
+];
 
 const visitorNo = String(
 	(1337 + [...name + nick + role].reduce((sum, c) => sum + c.charCodeAt(0), 0)) % 100000,
@@ -51,10 +77,10 @@ const getDomain = (url: string | null | undefined) => {
 		<meta name="generator" content={Astro.generator} />
 		<meta
 			name="description"
-			content={`${name} — ${role}. ${profile?.tagline ?? 'Backend Developer & Systems Specialist.'}`.trim()}
+			content={`${name} — ${role}. ${profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}`.trim()}
 		/>
 		<meta property="og:title" content={`${name} — ${role}`} />
-		<meta property="og:description" content={profile?.tagline ?? 'Backend Developer & Systems Specialist'} />
+		<meta property="og:description" content={profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'} />
 
 		<!-- Prevent Flash of Unstyled Theme -->
 		<script is:inline>
@@ -79,11 +105,11 @@ const getDomain = (url: string | null | undefined) => {
 			<div class="nav-wrapper">
 				<a href="#" class="brand">
 					<img
-						src="/avatar.jpg"
+						src={avatarUrl}
 						alt={`Avatar of ${name}`}
 						class="brand-avatar"
-						width="32"
-						height="32"
+						width="34"
+						height="34"
 					/>
 					<div class="brand-text">
 						<span class="brand-title">{name}</span>
@@ -121,29 +147,34 @@ const getDomain = (url: string | null | undefined) => {
 				<div class="hero-split">
 					<div class="hero-statement">
 						<h1 class="statement-headline">
-							Backend developer &amp; systems specialist building reliable infrastructure, automated business tooling, and resilient web platforms.
+							{profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}
 						</h1>
 						<div class="statement-sub">
-							<p>
-								I focus on server-side architecture, Linux production environments, and full-stack execution with Next.js &amp; TypeScript. Currently building software at Harmoni and managing server infrastructure at PT CITI PLUMB.
-							</p>
+							{profile?.bio ? (
+								<PortableText value={profile.bio} />
+							) : (
+								<p>
+									I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
+									I specialize in scalable backend systems — from relational and NoSQL database design to RESTful APIs and data security.
+								</p>
+							)}
 						</div>
 					</div>
 
 					<div class="hero-portrait">
 						<div class="portrait-frame">
 							<img
-								src="/avatar.jpg"
+								src={avatarUrl}
 								alt={`Photo of ${name}`}
 								class="portrait-img"
-								width="220"
-								height="220"
+								width="200"
+								height="200"
 								loading="eager"
 							/>
 						</div>
 						<div class="portrait-meta">
 							<span class="portrait-name">{name}</span>
-							<span class="portrait-handle">@redoamain</span>
+							<span class="portrait-handle">@{nick.toLowerCase()}amain</span>
 						</div>
 					</div>
 				</div>
@@ -151,11 +182,11 @@ const getDomain = (url: string | null | undefined) => {
 				<div class="hero-meta-strip">
 					<div class="meta-item">
 						<span class="meta-label">CURRENT ROLES</span>
-						<span class="meta-val">Harmoni Software House &amp; PT CITI PLUMB</span>
+						<span class="meta-val">{currentRoles}</span>
 					</div>
 					<div class="meta-item">
 						<span class="meta-label">SPECIALTY</span>
-						<span class="meta-val">Linux Servers, PostgreSQL, Docker, TypeScript</span>
+						<span class="meta-val">{specialties}</span>
 					</div>
 					<div class="meta-item">
 						<span class="meta-label">CONNECT</span>
@@ -518,7 +549,7 @@ const getDomain = (url: string | null | undefined) => {
 			<!-- About & Engineering Approach -->
 			<section id="about" class="editorial-section">
 				<div class="section-topbar">
-					<h2 class="section-title">About &amp; Approach</h2>
+					<h2 class="section-title">About &amp; Stack</h2>
 				</div>
 
 				<div class="about-grid">
@@ -534,25 +565,46 @@ const getDomain = (url: string | null | undefined) => {
 					</div>
 
 					<div class="about-aside">
-						<h3 class="aside-heading">Core Competencies</h3>
-						<ul class="aside-list">
-							<li>
-								<strong>System Architecture</strong>
-								<span>Designing data contracts, RESTful interfaces, and modular backend services.</span>
-							</li>
-							<li>
-								<strong>Linux &amp; Server Infrastructure</strong>
-								<span>Server security, Docker container orchestration, deployment automation, and process monitoring.</span>
-							</li>
-							<li>
-								<strong>Database Engineering</strong>
-								<span>Relational data modeling with PostgreSQL, indexing, query optimization, and cache management.</span>
-							</li>
-							<li>
-								<strong>Full-Stack Frontend</strong>
-								<span>Next.js, Tailwind CSS, and TypeScript for responsive, accessible user interfaces.</span>
-							</li>
-						</ul>
+						<h3 class="aside-heading">Technical Skills &amp; Stack</h3>
+						{skills && skills.length > 0 ? (
+							<div class="skills-grid">
+								{skillCategories.map((cat) => {
+									const catSkills = skills.filter((s) => s.category?.toLowerCase() === cat.key);
+									if (catSkills.length === 0) return null;
+									return (
+										<div class="skill-group">
+											<span class="skill-group-label">{cat.label}</span>
+											<div class="skill-group-pills">
+												{catSkills.map((s) => (
+													<span class="skill-pill" title={s.level ? `Level: ${s.level}` : undefined}>
+														{s.name}
+													</span>
+												))}
+											</div>
+										</div>
+									);
+								})}
+							</div>
+						) : (
+							<ul class="aside-list">
+								<li>
+									<strong>System Architecture</strong>
+									<span>Designing data contracts, RESTful interfaces, and modular backend services.</span>
+								</li>
+								<li>
+									<strong>Linux &amp; Server Infrastructure</strong>
+									<span>Server security, Docker container orchestration, deployment automation, and process monitoring.</span>
+								</li>
+								<li>
+									<strong>Database Engineering</strong>
+									<span>Relational data modeling with PostgreSQL, indexing, query optimization, and cache management.</span>
+								</li>
+								<li>
+									<strong>Full-Stack Frontend</strong>
+									<span>Next.js, Tailwind CSS, and TypeScript for responsive, accessible user interfaces.</span>
+								</li>
+							</ul>
+						)}
 					</div>
 				</div>
 			</section>
