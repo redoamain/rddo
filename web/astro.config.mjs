@@ -5,13 +5,18 @@ import { loadEnv } from 'vite';
 import { defineConfig } from 'astro/config';
 import sanity from '@sanity/astro';
 
-// astro.config runs before Astro's own env loading — read the same
-// PUBLIC_ vars via Vite's loadEnv so pages & config stay in sync.
-const { PUBLIC_SANITY_PROJECT_ID, PUBLIC_SANITY_DATASET } = loadEnv(
+import { fileURLToPath } from 'node:url';
+import path from 'node:path';
+
+const projectDir = path.dirname(fileURLToPath(import.meta.url));
+const env = loadEnv(
 	process.env.NODE_ENV ?? 'development',
-	process.cwd(),
+	projectDir,
 	'',
 );
+
+const projectId = env.PUBLIC_SANITY_PROJECT_ID || process.env.PUBLIC_SANITY_PROJECT_ID || 'l9ie13zf';
+const dataset = env.PUBLIC_SANITY_DATASET || process.env.PUBLIC_SANITY_DATASET || 'production';
 
 // https://astro.build/config
 export default defineConfig({
@@ -20,9 +25,9 @@ export default defineConfig({
 	},
 	integrations: [
 		sanity({
-			projectId: PUBLIC_SANITY_PROJECT_ID,
-			dataset: PUBLIC_SANITY_DATASET,
-			useCdn: false, // False for static builds
+			projectId,
+			dataset,
+			useCdn: true,
 			apiVersion: '2024-01-01',
 		}),
 	],

@@ -31,6 +31,15 @@ const allTags = Array.from(
 ).sort();
 
 const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? null;
+
+const getDomain = (url: string | null | undefined) => {
+	if (!url) return 'system.internal';
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return 'system.internal';
+	}
+};
 ---
 
 <!DOCTYPE html>
@@ -167,9 +176,49 @@ const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? n
 			<!-- Selected Works Section -->
 			<section id="projects" class="editorial-section">
 				<div class="section-topbar">
-					<div class="topbar-left">
-						<h2 class="section-title">Selected Works</h2>
-						<span class="section-count">({projects.length})</span>
+					<div class="topbar-header-row">
+						<div class="topbar-left">
+							<h2 class="section-title">Selected Works</h2>
+							<span class="section-count">({projects.length})</span>
+						</div>
+
+						<div class="topbar-controls">
+							<!-- Search Input -->
+							<div class="project-search-wrap">
+								<Icon name="search" size={13} />
+								<input
+									type="text"
+									id="projectSearch"
+									class="project-search-input"
+									placeholder="Search project or stack..."
+									aria-label="Search projects by title or technology"
+								/>
+							</div>
+
+							<!-- View Mode Toggle -->
+							<div class="view-toggle-group" role="group" aria-label="Project view mode">
+								<button
+									type="button"
+									id="btnViewShowcase"
+									class="view-btn active"
+									aria-pressed="true"
+									title="Showcase Cards View"
+								>
+									<Icon name="grid" size={13} />
+									<span>Showcase</span>
+								</button>
+								<button
+									type="button"
+									id="btnViewTable"
+									class="view-btn"
+									aria-pressed="false"
+									title="All Projects Table View"
+								>
+									<Icon name="list" size={13} />
+									<span>Index Table</span>
+								</button>
+							</div>
+						</div>
 					</div>
 
 					{/* Tag Filter Pills */}
@@ -187,25 +236,37 @@ const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? n
 					)}
 				</div>
 
-				<!-- Project List / Editorial Showcase -->
-				<div class="works-list" id="worksContainer">
+				<!-- 1. Editorial Showcase View -->
+				<div class="works-showcase-view" id="worksShowcase">
 					{projects.map((p, idx) => (
-						<article class="work-entry" data-tags={(p.tags ?? []).join(',')} data-id={p._id}>
-							<div class="work-header">
-								<div class="work-index">0{idx + 1}</div>
-								<div class="work-heading-wrap">
-									<h3 class="work-name">
-										<button
-											type="button"
-											class="work-title-link"
-											data-open-modal={`modal-${p._id}`}
-											aria-label={`View details for ${p.title}`}
-										>
-											{p.title}
-										</button>
-									</h3>
-									{p.summary && <p class="work-desc">{p.summary}</p>}
-								</div>
+						<article
+							class={`work-card ${idx >= 4 ? 'work-extra' : ''}`}
+							data-tags={(p.tags ?? []).join(',')}
+							data-title={(p.title ?? '').toLowerCase()}
+							data-id={p._id}
+						>
+							<div class="work-card-info">
+								<span class="work-kicker">0{idx + 1} · System Architecture</span>
+								<h3 class="work-name">
+									<button
+										type="button"
+										class="work-title-link"
+										data-open-modal={`modal-${p._id}`}
+										aria-label={`View details for ${p.title}`}
+									>
+										{p.title}
+									</button>
+								</h3>
+								{p.summary && <p class="work-desc">{p.summary}</p>}
+
+								{p.tags && p.tags.length > 0 && (
+									<div class="work-tags-row">
+										{p.tags.map((t) => (
+											<span class="spec-tag">{t}</span>
+										))}
+									</div>
+								)}
+
 								<div class="work-actions">
 									{p.liveUrl && (
 										<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn">
@@ -230,46 +291,128 @@ const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? n
 								</div>
 							</div>
 
-							<!-- Visual Media -->
-							{p.coverImage?.asset && (
-								<div class="work-visual">
-									<a
-										href={projectUrl(p) ?? '#'}
-										target="_blank"
-										rel="noreferrer"
-										tabindex="-1"
-										aria-label={`Screenshot of ${p.title}`}
-										class="visual-link"
-									>
-										<img
-											src={imageUrl(p.coverImage, 1100) ?? ''}
-											alt={p.title ?? 'Project screenshot'}
-											loading="lazy"
-											class="visual-img"
-										/>
-									</a>
-								</div>
-							)}
-
-							<!-- Stack tags -->
-							{p.tags && p.tags.length > 0 && (
-								<div class="work-footer-tags">
-									<span class="tags-prefix">Stack:</span>
-									<div class="tags-row">
-										{p.tags.map((t) => (
-											<span class="spec-tag">{t}</span>
-										))}
+							<div class="work-card-preview">
+								<div class="browser-mockup">
+									<div class="browser-bar">
+										<div class="browser-dots">
+											<span class="browser-dot"></span>
+											<span class="browser-dot"></span>
+											<span class="browser-dot"></span>
+										</div>
+										<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
+									</div>
+									<div class="browser-content">
+										{p.coverImage?.asset ? (
+											<img
+												src={imageUrl(p.coverImage, 900) ?? ''}
+												alt={p.title ?? 'Project view'}
+												loading="lazy"
+												class="browser-img"
+											/>
+										) : (
+											<div class="schematic-preview">
+												<div class="schematic-top">
+													<Icon name="terminal" size={13} />
+													<span>ENGINEERING ARCHITECTURE</span>
+												</div>
+												<div class="schematic-body">
+													<span class="schematic-title">{p.title}</span>
+													<span class="schematic-stack">{(p.tags ?? []).slice(0, 4).join(' · ')}</span>
+												</div>
+												<div class="schematic-footer">
+													<span>READY FOR PRODUCTION</span>
+												</div>
+											</div>
+										)}
 									</div>
 								</div>
-							)}
+							</div>
 						</article>
 					))}
 				</div>
 
+				<!-- Load More Button (Showcase View) -->
+				{projects.length > 4 && (
+					<div class="load-more-wrap" id="loadMoreWrap">
+						<button type="button" id="loadMoreBtn" class="load-more-btn">
+							<span id="loadMoreLabel">Show all {projects.length} projects</span>
+							<Icon name="chevron-down" size={13} />
+						</button>
+					</div>
+				)}
+
+				<!-- 2. Table Index View (Archive for large number of projects) -->
+				<div class="works-table-view" id="worksTableView" style="display: none;">
+					<table class="works-table">
+						<thead>
+							<tr>
+								<th>No.</th>
+								<th>Project</th>
+								<th>Technologies</th>
+								<th>Actions</th>
+							</tr>
+						</thead>
+						<tbody>
+							{projects.map((p, idx) => (
+								<tr
+									class="table-row-item"
+									data-tags={(p.tags ?? []).join(',')}
+									data-title={(p.title ?? '').toLowerCase()}
+								>
+									<td class="table-index">0{idx + 1}</td>
+									<td>
+										<div class="table-proj-info">
+											<button
+												type="button"
+												class="table-proj-name"
+												data-open-modal={`modal-${p._id}`}
+											>
+												{p.title}
+											</button>
+											{p.summary && <span class="table-proj-summary">{p.summary}</span>}
+										</div>
+									</td>
+									<td>
+										<div class="work-tags-row">
+											{(p.tags ?? []).slice(0, 4).map((t) => (
+												<span class="spec-tag">{t}</span>
+											))}
+										</div>
+									</td>
+									<td>
+										<div class="table-actions">
+											{p.liveUrl && (
+												<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Live Preview">
+													<span>Live</span>
+													<Icon name="arrow-up-right" size={11} />
+												</a>
+											)}
+											{p.repoUrl && (
+												<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Source Code">
+													<span>Repo</span>
+													<Icon name="arrow-up-right" size={11} />
+												</a>
+											)}
+											<button
+												type="button"
+												class="action-link-btn"
+												data-open-modal={`modal-${p._id}`}
+												title="Project Details"
+											>
+												<span>Details</span>
+											</button>
+										</div>
+									</td>
+								</tr>
+							))}
+						</tbody>
+					</table>
+				</div>
+
 				<!-- Filter empty state -->
 				<div id="noResultsMsg" class="editorial-empty" style="display: none;">
-					<p>No projects match this technology filter.</p>
-					<button type="button" class="action-link" id="resetFilter">Show all works →</button>
+					<p>No projects match your search or filter.</p>
+					<button type="button" class="action-link" id="resetFilter">Clear filters →</button>
 				</div>
 
 				<!-- Detail Modals -->
@@ -489,45 +632,145 @@ const projectUrl = (p: (typeof projects)[number]) => p.liveUrl ?? p.repoUrl ?? n
 		});
 	}
 
-	// Filter Works
+	// Project View State, Search, & Filtering
 	const filterBtns = document.querySelectorAll<HTMLButtonElement>('.filter-btn');
-	const workEntries = document.querySelectorAll<HTMLElement>('.work-entry');
+	const showcaseCards = document.querySelectorAll<HTMLElement>('.work-card');
+	const tableRows = document.querySelectorAll<HTMLElement>('.table-row-item');
 	const noResults = document.getElementById('noResultsMsg');
 	const resetBtn = document.getElementById('resetFilter');
+	const searchInput = document.getElementById('projectSearch') as HTMLInputElement | null;
+	const btnViewShowcase = document.getElementById('btnViewShowcase');
+	const btnViewTable = document.getElementById('btnViewTable');
+	const worksShowcase = document.getElementById('worksShowcase');
+	const worksTableView = document.getElementById('worksTableView');
+	const loadMoreWrap = document.getElementById('loadMoreWrap');
+	const loadMoreBtn = document.getElementById('loadMoreBtn');
+	const loadMoreLabel = document.getElementById('loadMoreLabel');
 
-	const applyFilter = (filter: string) => {
-		filterBtns.forEach((btn) => {
-			const isActive = btn.dataset.filter === filter;
-			btn.classList.toggle('active', isActive);
-			btn.setAttribute('aria-pressed', isActive ? 'true' : 'false');
-		});
+	let currentFilter = 'all';
+	let currentSearch = '';
+	let currentView = 'showcase';
+	let isExpanded = false;
 
-		let visible = 0;
-		workEntries.forEach((entry) => {
-			const tags = (entry.dataset.tags || '').split(',').map((t) => t.trim());
-			const match = filter === 'all' || tags.includes(filter);
-			if (match) {
-				entry.style.display = '';
-				visible++;
+	const updateWorks = () => {
+		const isFiltering = currentFilter !== 'all' || currentSearch.trim() !== '';
+		let visibleShowcase = 0;
+		let visibleTable = 0;
+
+		showcaseCards.forEach((card) => {
+			const tags = (card.dataset.tags || '').split(',').map((t) => t.trim());
+			const title = card.dataset.title || '';
+			const matchesFilter = currentFilter === 'all' || tags.includes(currentFilter);
+			const matchesSearch = !currentSearch || title.includes(currentSearch) || tags.some((t) => t.toLowerCase().includes(currentSearch));
+			const matches = matchesFilter && matchesSearch;
+
+			if (matches) {
+				const isExtra = card.classList.contains('work-extra');
+				if (isFiltering || isExpanded || !isExtra) {
+					card.style.display = 'grid';
+				} else {
+					card.style.display = 'none';
+				}
+				visibleShowcase++;
 			} else {
-				entry.style.display = 'none';
+				card.style.display = 'none';
 			}
 		});
 
+		tableRows.forEach((row) => {
+			const tags = (row.dataset.tags || '').split(',').map((t) => t.trim());
+			const title = row.dataset.title || '';
+			const matchesFilter = currentFilter === 'all' || tags.includes(currentFilter);
+			const matchesSearch = !currentSearch || title.includes(currentSearch) || tags.some((t) => t.toLowerCase().includes(currentSearch));
+
+			if (matchesFilter && matchesSearch) {
+				row.style.display = '';
+				visibleTable++;
+			} else {
+				row.style.display = 'none';
+			}
+		});
+
+		const totalVisible = currentView === 'showcase' ? visibleShowcase : visibleTable;
 		if (noResults) {
-			noResults.style.display = visible === 0 ? 'block' : 'none';
+			noResults.style.display = totalVisible === 0 ? 'block' : 'none';
+		}
+
+		if (loadMoreWrap) {
+			if (currentView === 'table' || isFiltering) {
+				loadMoreWrap.style.display = 'none';
+			} else {
+				loadMoreWrap.style.display = 'flex';
+			}
 		}
 	};
 
 	filterBtns.forEach((btn) => {
 		btn.addEventListener('click', () => {
-			applyFilter(btn.dataset.filter ?? 'all');
+			currentFilter = btn.dataset.filter ?? 'all';
+			filterBtns.forEach((b) => {
+				const isActive = b.dataset.filter === currentFilter;
+				b.classList.toggle('active', isActive);
+				b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+			});
+			updateWorks();
 		});
 	});
 
+	if (searchInput) {
+		searchInput.addEventListener('input', () => {
+			currentSearch = searchInput.value.trim().toLowerCase();
+			updateWorks();
+		});
+	}
+
 	if (resetBtn) {
 		resetBtn.addEventListener('click', () => {
-			applyFilter('all');
+			currentFilter = 'all';
+			currentSearch = '';
+			if (searchInput) searchInput.value = '';
+			filterBtns.forEach((b) => {
+				const isActive = b.dataset.filter === 'all';
+				b.classList.toggle('active', isActive);
+				b.setAttribute('aria-pressed', isActive ? 'true' : 'false');
+			});
+			updateWorks();
+		});
+	}
+
+	if (btnViewShowcase && btnViewTable && worksShowcase && worksTableView) {
+		btnViewShowcase.addEventListener('click', () => {
+			currentView = 'showcase';
+			btnViewShowcase.classList.add('active');
+			btnViewShowcase.setAttribute('aria-pressed', 'true');
+			btnViewTable.classList.remove('active');
+			btnViewTable.setAttribute('aria-pressed', 'false');
+			worksShowcase.style.display = 'flex';
+			worksTableView.style.display = 'none';
+			updateWorks();
+		});
+
+		btnViewTable.addEventListener('click', () => {
+			currentView = 'table';
+			btnViewTable.classList.add('active');
+			btnViewTable.setAttribute('aria-pressed', 'true');
+			btnViewShowcase.classList.remove('active');
+			btnViewShowcase.setAttribute('aria-pressed', 'false');
+			worksShowcase.style.display = 'none';
+			worksTableView.style.display = 'block';
+			updateWorks();
+		});
+	}
+
+	if (loadMoreBtn && loadMoreLabel) {
+		loadMoreBtn.addEventListener('click', () => {
+			isExpanded = !isExpanded;
+			if (isExpanded) {
+				loadMoreLabel.textContent = 'Show less';
+			} else {
+				loadMoreLabel.textContent = `Show all ${showcaseCards.length} projects`;
+			}
+			updateWorks();
 		});
 	}
 
