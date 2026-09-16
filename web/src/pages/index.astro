@@ -840,11 +840,13 @@ const getDomain = (url: string | null | undefined) => {
 	const slider = document.getElementById('horizontalSlider');
 	if (slider) {
 		slider.addEventListener('touchstart', (e) => {
+			if (document.querySelector('dialog[open]')) return;
 			touchStartX = e.changedTouches[0].screenX;
 			touchStartY = e.changedTouches[0].screenY;
 		}, { passive: true });
 
 		slider.addEventListener('touchend', (e) => {
+			if (document.querySelector('dialog[open]')) return;
 			const touchEndX = e.changedTouches[0].screenX;
 			const touchEndY = e.changedTouches[0].screenY;
 			const diffX = touchStartX - touchEndX;
