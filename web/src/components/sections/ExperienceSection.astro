@@ -1,0 +1,51 @@
+---
+import { formatMonthYear } from '../../lib/sanity';
+import type { EXPERIENCES_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	experiences: EXPERIENCES_QUERY_RESULT;
+}
+
+const { experiences } = Astro.props;
+---
+
+<!-- Panel 03: Experience & Roles -->
+<section id="experience" class="horizontal-panel" data-panel-index="2" data-panel-title="Experience">
+	<div class="panel-inner">
+		<div class="editorial-section">
+			<div class="section-topbar">
+				<span class="section-kicker">CAREER &amp; EXPERIENCE</span>
+				<h2 class="section-title">Experience &amp; Roles</h2>
+			</div>
+
+			<div class="experience-table">
+				{experiences.map((e) => (
+					<div class="exp-row">
+						<div class="exp-col-date">
+							<span class="exp-time">
+								{formatMonthYear(e.startDate)} — {e.current ? 'Present' : formatMonthYear(e.endDate)}
+							</span>
+							{e.location && <span class="exp-loc">{e.location}</span>}
+						</div>
+
+						<div class="exp-col-role">
+							<h3 class="exp-position">{e.position}</h3>
+							<span class="exp-company">@ {e.company}</span>
+						</div>
+
+						<div class="exp-col-summary">
+							{e.summary && <p>{e.summary}</p>}
+							{e.tags && e.tags.length > 0 && (
+								<div class="exp-tags-list">
+									{e.tags.map((t) => (
+										<span class="spec-tag">{t}</span>
+									))}
+								</div>
+							)}
+						</div>
+					</div>
+				))}
+			</div>
+		</div>
+	</div>
+</section>

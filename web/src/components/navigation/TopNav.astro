@@ -1,0 +1,63 @@
+---
+import Icon from '../Icon.astro';
+import type { PROFILE_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	name: string;
+	role: string;
+	profile?: PROFILE_QUERY_RESULT;
+	avatarUrl: string;
+}
+
+const { name, role, profile, avatarUrl } = Astro.props;
+---
+
+<header class="top-nav">
+	<div class="nav-wrapper">
+		<a href="#profile" class="brand" data-nav-index="0" title="Go to Profile">
+			<img
+				src={avatarUrl}
+				alt={`Avatar of ${name}`}
+				class="brand-avatar"
+				width="34"
+				height="34"
+			/>
+			<div class="brand-text">
+				<span class="brand-title">{name}</span>
+				<span class="brand-sub">{role} · {profile?.location ?? 'Surabaya, ID'}</span>
+			</div>
+		</a>
+
+		<div class="nav-controls">
+			<nav class="nav-menu" id="mainNavMenu" aria-label="Page Sections">
+				<button type="button" class="nav-anchor active" data-nav-index="0" data-nav-target="profile">
+					Profile
+				</button>
+				<button type="button" class="nav-anchor" data-nav-index="1" data-nav-target="projects">
+					Works
+				</button>
+				<button type="button" class="nav-anchor" data-nav-index="2" data-nav-target="experience">
+					Experience
+				</button>
+				<button type="button" class="nav-anchor" data-nav-index="3" data-nav-target="about">
+					About
+				</button>
+				<button type="button" class="nav-anchor" data-nav-index="4" data-nav-target="contact">
+					Contact
+				</button>
+			</nav>
+
+			<!-- Theme Switcher -->
+			<button
+				type="button"
+				id="themeToggle"
+				class="theme-toggle"
+				aria-label="Toggle dark / light theme"
+				title="Toggle theme"
+			>
+				<span class="theme-icon sun"><Icon name="sun" size={15} /></span>
+				<span class="theme-icon moon"><Icon name="moon" size={15} /></span>
+			</button>
+		</div>
+	</div>
+</header>

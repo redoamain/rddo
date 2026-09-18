@@ -1,0 +1,51 @@
+---
+import Icon from '../Icon.astro';
+
+interface Props {
+	totalPanels?: number;
+}
+
+const { totalPanels = 5 } = Astro.props;
+const formattedTotal = String(totalPanels).padStart(2, '0');
+---
+
+<!-- Mobile Floating Arrow Navigation (Tanda Panah Saja) -->
+<nav class="mobile-bottom-nav" id="mobileBottomNav" aria-label="Mobile Navigation">
+	<button
+		type="button"
+		class="mobile-nav-arrow"
+		id="mobileNavPrev"
+		aria-label="Previous section"
+		title="Previous section"
+	>
+		<Icon name="chevron-left" size={18} />
+	</button>
+
+	<div class="mobile-nav-indicator" id="mobileNavIndicator" aria-live="polite">
+		<span class="mobile-nav-cur" id="mobileNavCurrent">01</span>
+		<span class="mobile-nav-slash">/</span>
+		<span class="mobile-nav-tot">{formattedTotal}</span>
+	</div>
+
+	<button
+		type="button"
+		class="mobile-nav-arrow"
+		id="mobileNavNext"
+		aria-label="Next section"
+		title="Next section"
+	>
+		<Icon name="chevron-right" size={18} />
+	</button>
+
+	<div class="mobile-nav-divider" aria-hidden="true"></div>
+
+	<button
+		type="button"
+		class="theme-toggle mobile-theme-btn"
+		aria-label="Toggle dark / light theme"
+		title="Toggle theme"
+	>
+		<span class="theme-icon sun"><Icon name="sun" size={14} /></span>
+		<span class="theme-icon moon"><Icon name="moon" size={14} /></span>
+	</button>
+</nav>

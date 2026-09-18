@@ -338,3 +338,20 @@ export function formatMonthYear(iso: string | null | undefined): string {
 	if (Number.isNaN(d.getTime())) return iso ?? '';
 	return new Intl.DateTimeFormat('en-US', { month: 'long', year: 'numeric' }).format(d);
 }
+
+/** Extract domain name from URL string, with fallback. */
+export function getDomain(url: string | null | undefined): string {
+	if (!url) return 'system.internal';
+	try {
+		return new URL(url).hostname;
+	} catch {
+		return 'system.internal';
+	}
+}
+
+export type {
+	EXPERIENCES_QUERY_RESULT,
+	PROFILE_QUERY_RESULT,
+	PROJECTS_QUERY_RESULT,
+} from '../../sanity.types';
+

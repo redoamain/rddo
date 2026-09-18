@@ -1,0 +1,75 @@
+---
+import { PortableText } from 'astro-portabletext';
+import Icon from '../Icon.astro';
+import type { PROFILE_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	profile?: PROFILE_QUERY_RESULT;
+	name: string;
+	nick: string;
+	avatarUrl: string;
+}
+
+const { profile, name, nick, avatarUrl } = Astro.props;
+---
+
+<!-- Panel 01: Profile -->
+<section id="profile" class="horizontal-panel" data-panel-index="0" data-panel-title="Profile">
+	<div class="panel-inner">
+		<div class="editorial-hero">
+			<div class="hero-split">
+				<div class="hero-statement">
+					<span class="section-kicker">PROFILE · BACKEND ENGINEER</span>
+					<h1 class="statement-headline">
+						{profile?.tagline ?? 'Building fast, secure, and easy-to-use web applications.'}
+					</h1>
+					<div class="statement-sub">
+						{profile?.bio ? (
+							<PortableText value={profile.bio} />
+						) : (
+							<p>
+								I'm a full-stack web developer who combines solid server-side logic with polished frontend experiences.
+								I specialize in scalable backend systems — from relational and NoSQL database design to RESTful APIs and data security.
+							</p>
+						)}
+					</div>
+
+					<div class="hero-connect-row">
+						{profile?.email && (
+							<a href={`mailto:${profile.email}`} class="hero-cta-btn">
+								<Icon name="mail" size={14} />
+								<span>Email</span>
+							</a>
+						)}
+						{profile?.socials?.map((s) => (
+							<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="hero-social-link">
+								{s.label === 'GitHub' ? <Icon name="github" size={13} /> : s.label === 'LinkedIn' ? <Icon name="linkedin" size={13} /> : null}
+								<span>{s.label} ↗</span>
+							</a>
+						))}
+						<button type="button" class="hero-action-next" data-nav-index="1">
+							<span>View Works →</span>
+						</button>
+					</div>
+				</div>
+
+				<div class="hero-portrait">
+					<div class="portrait-frame">
+						<img
+							src={avatarUrl}
+							alt={`Photo of ${name}`}
+							class="portrait-img"
+							width="200"
+							height="200"
+							loading="eager"
+						/>
+					</div>
+					<div class="portrait-meta">
+						<span class="portrait-name">{name}</span>
+						<span class="portrait-handle">@{nick.toLowerCase()}amain</span>
+					</div>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>

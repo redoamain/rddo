@@ -1,0 +1,262 @@
+---
+import Icon from '../Icon.astro';
+import { getDomain, imageUrl } from '../../lib/sanity';
+import type { PROJECTS_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	projects: PROJECTS_QUERY_RESULT;
+	allTags: string[];
+}
+
+const { projects, allTags } = Astro.props;
+---
+
+<!-- Panel 02: Selected Works -->
+<section id="projects" class="horizontal-panel" data-panel-index="1" data-panel-title="Works">
+	<div class="panel-inner">
+		<div class="editorial-section works-section-wrap">
+			<div class="section-topbar">
+				<div class="topbar-header-row">
+					<div class="topbar-left">
+					
+						<div class="title-with-count">
+							<h2 class="section-title">Projects &amp; Systems</h2>
+							<span class="section-count">({projects.length})</span>
+						</div>
+					</div>
+
+					<div class="topbar-controls">
+						<!-- Search Input -->
+						<div class="project-search-wrap">
+							<Icon name="search" size={13} />
+							<input
+								type="text"
+								id="projectSearch"
+								class="project-search-input"
+								placeholder="Search project or stack..."
+								aria-label="Search projects by title or technology"
+							/>
+						</div>
+
+						<!-- View Mode Toggle -->
+						<div class="view-toggle-group" role="group" aria-label="Project view mode">
+							<button
+								type="button"
+								id="btnViewShowcase"
+								class="view-btn active"
+								aria-pressed="true"
+								title="Showcase Cards View"
+							>
+								<Icon name="grid" size={13} />
+								<span>Showcase</span>
+							</button>
+							<button
+								type="button"
+								id="btnViewTable"
+								class="view-btn"
+								aria-pressed="false"
+								title="All Projects Table View"
+							>
+								<Icon name="list" size={13} />
+								<span>Index Table</span>
+							</button>
+						</div>
+					</div>
+				</div>
+
+				{/* Tag Filter Pills */}
+				{allTags.length > 0 && (
+					<div class="filter-capsules" role="tablist" aria-label="Filter works by technology">
+						<button type="button" class="filter-btn active" data-filter="all" aria-pressed="true">
+							All
+						</button>
+						{allTags.map((tag) => (
+							<button type="button" class="filter-btn" data-filter={tag} aria-pressed="false">
+								{tag}
+							</button>
+						))}
+					</div>
+				)}
+			</div>
+
+			<!-- 1. Editorial Showcase View -->
+			<div class="works-showcase-view" id="worksShowcase">
+				{projects.map((p, idx) => (
+					<article
+						class={`work-card ${idx >= 4 ? 'work-extra' : ''}`}
+						data-tags={(p.tags ?? []).join(',')}
+						data-title={(p.title ?? '').toLowerCase()}
+						data-id={p._id}
+					>
+						<div class="work-card-info">
+							<span class="work-kicker">0{idx + 1} · System Architecture</span>
+							<h3 class="work-name">
+								<button
+									type="button"
+									class="work-title-link"
+									data-open-modal={`modal-${p._id}`}
+									aria-label={`View details for ${p.title}`}
+								>
+									{p.title}
+								</button>
+							</h3>
+							{p.summary && <p class="work-desc">{p.summary}</p>}
+
+							{p.tags && p.tags.length > 0 && (
+								<div class="work-tags-row">
+									{p.tags.map((t) => (
+										<span class="spec-tag">{t}</span>
+									))}
+								</div>
+							)}
+
+							<div class="work-actions">
+								{p.liveUrl && (
+									<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+										<span>Live</span>
+										<Icon name="arrow-up-right" size={13} />
+									</a>
+								)}
+								{p.repoUrl && (
+									<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn">
+										<span>Source</span>
+										<Icon name="arrow-up-right" size={13} />
+									</a>
+								)}
+								<button
+									type="button"
+									class="action-link-btn details-btn"
+									data-open-modal={`modal-${p._id}`}
+								>
+									<span>Overview</span>
+									<Icon name="info" size={13} />
+								</button>
+							</div>
+						</div>
+
+						<div class="work-card-preview">
+							<div class="browser-mockup" data-open-modal={`modal-${p._id}`} role="button" tabindex="0" title={`Click to view overview for ${p.title}`}>
+								<div class="browser-bar">
+									<div class="browser-dots">
+										<span class="browser-dot"></span>
+										<span class="browser-dot"></span>
+										<span class="browser-dot"></span>
+									</div>
+									<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
+								</div>
+								<div class="browser-content">
+									{p.coverImage?.asset ? (
+										<img
+											src={imageUrl(p.coverImage, 900) ?? ''}
+											alt={p.title ?? 'Project view'}
+											loading="lazy"
+											class="browser-img"
+										/>
+									) : (
+										<div class="schematic-preview">
+											<div class="schematic-top">
+												<Icon name="terminal" size={13} />
+												<span>ENGINEERING ARCHITECTURE</span>
+											</div>
+											<div class="schematic-body">
+												<span class="schematic-title">{p.title}</span>
+												<span class="schematic-stack">{(p.tags ?? []).slice(0, 4).join(' · ')}</span>
+											</div>
+											<div class="schematic-footer">
+												<span>READY FOR PRODUCTION</span>
+											</div>
+										</div>
+									)}
+								</div>
+							</div>
+						</div>
+					</article>
+				))}
+			</div>
+
+			<!-- Load More Button (Showcase View) -->
+			{projects.length > 4 && (
+				<div class="load-more-wrap" id="loadMoreWrap">
+					<button type="button" id="loadMoreBtn" class="load-more-btn">
+						<span id="loadMoreLabel">Show all {projects.length} projects</span>
+						<Icon name="chevron-down" size={13} />
+					</button>
+				</div>
+			)}
+
+			<!-- 2. Table Index View (Archive for large number of projects) -->
+			<div class="works-table-view" id="worksTableView" style="display: none;">
+				<table class="works-table">
+					<thead>
+						<tr>
+							<th>No.</th>
+							<th>Project</th>
+							<th>Technologies</th>
+							<th>Actions</th>
+						</tr>
+					</thead>
+					<tbody>
+						{projects.map((p, idx) => (
+							<tr
+								class="table-row-item"
+								data-tags={(p.tags ?? []).join(',')}
+								data-title={(p.title ?? '').toLowerCase()}
+							>
+								<td class="table-index">0{idx + 1}</td>
+								<td>
+									<div class="table-proj-info">
+										<button
+											type="button"
+											class="table-proj-name"
+											data-open-modal={`modal-${p._id}`}
+										>
+											{p.title}
+										</button>
+										{p.summary && <span class="table-proj-summary">{p.summary}</span>}
+									</div>
+								</td>
+								<td>
+									<div class="work-tags-row">
+										{(p.tags ?? []).slice(0, 4).map((t) => (
+											<span class="spec-tag">{t}</span>
+										))}
+									</div>
+								</td>
+								<td>
+									<div class="table-actions">
+										{p.liveUrl && (
+											<a href={p.liveUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Live Preview">
+												<span>Live</span>
+												<Icon name="arrow-up-right" size={11} />
+											</a>
+										)}
+										{p.repoUrl && (
+											<a href={p.repoUrl} target="_blank" rel="noreferrer" class="action-link-btn" title="Source Code">
+												<span>Repo</span>
+												<Icon name="arrow-up-right" size={11} />
+											</a>
+										)}
+										<button
+											type="button"
+											class="action-link-btn"
+											data-open-modal={`modal-${p._id}`}
+											title="Project Details"
+										>
+											<span>Details</span>
+										</button>
+									</div>
+								</td>
+							</tr>
+						))}
+					</tbody>
+				</table>
+			</div>
+
+			<!-- Filter empty state -->
+			<div id="noResultsMsg" class="editorial-empty" style="display: none;">
+				<p>No projects match your search or filter.</p>
+				<button type="button" class="action-link" id="resetFilter">Clear filters →</button>
+			</div>
+		</div>
+	</div>
+</section>

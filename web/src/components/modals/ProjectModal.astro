@@ -1,0 +1,109 @@
+---
+import { PortableText } from 'astro-portabletext';
+import Icon from '../Icon.astro';
+import { getDomain, imageUrl } from '../../lib/sanity';
+import type { PROJECTS_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	project: PROJECTS_QUERY_RESULT[number];
+}
+
+const { project: p } = Astro.props;
+---
+
+<dialog id={`modal-${p._id}`} class="editorial-dialog" aria-labelledby={`title-${p._id}`}>
+	<div class="dialog-inner">
+		<button type="button" class="dialog-close-corner" data-close-modal aria-label="Close overview" title="Close (Esc)">
+			<Icon name="x" size={17} />
+		</button>
+
+		<div class="dialog-scroll">
+			<!-- Centered Header -->
+			<div class="dialog-header-center">
+				<span class="dialog-kicker">CASE STUDY · PROJECT OVERVIEW</span>
+				<h2 class="dialog-title" id={`title-${p._id}`}>{p.title}</h2>
+				
+				<!-- Quick action links -->
+				<div class="dialog-quick-actions">
+					{p.liveUrl && (
+						<a href={p.liveUrl} target="_blank" rel="noreferrer" class="dialog-pill-link">
+							<span>Visit Live Site</span>
+							<Icon name="arrow-up-right" size={12} />
+						</a>
+					)}
+					{p.repoUrl && (
+						<a href={p.repoUrl} target="_blank" rel="noreferrer" class="dialog-pill-link">
+							<span>Source Repository</span>
+							<Icon name="arrow-up-right" size={12} />
+						</a>
+					)}
+				</div>
+			</div>
+
+			<!-- Centered Media Frame -->
+			{p.coverImage?.asset && (
+				<div class="dialog-media-frame">
+					<div class="browser-bar">
+						<div class="browser-dots">
+							<span class="browser-dot"></span>
+							<span class="browser-dot"></span>
+							<span class="browser-dot"></span>
+						</div>
+						<span class="browser-url">{getDomain(p.liveUrl ?? p.repoUrl)}</span>
+					</div>
+					<div class="dialog-img-wrap">
+						<img
+							src={imageUrl(p.coverImage, 1200) ?? ''}
+							alt={p.title ?? 'Project full view'}
+							class="dialog-cover-img"
+							loading="lazy"
+						/>
+					</div>
+				</div>
+			)}
+
+			<!-- Centered Summary Lead -->
+			{p.summary && (
+				<p class="dialog-lead-centered">{p.summary}</p>
+			)}
+
+			<!-- Centered Tech Tags -->
+			{p.tags && p.tags.length > 0 && (
+				<div class="dialog-spec-centered">
+					{p.tags.map((t) => (
+						<span class="spec-tag">{t}</span>
+					))}
+				</div>
+			)}
+
+			<!-- Subtle Center Divider -->
+			<div class="dialog-divider"></div>
+
+			<!-- Centered Reading Column -->
+			{p.description && p.description.length > 0 && (
+				<div class="dialog-body-prose">
+					<PortableText value={p.description} />
+				</div>
+			)}
+
+			<!-- Centered Action Buttons -->
+			<div class="dialog-links-row">
+				{p.liveUrl && (
+					<a href={p.liveUrl} target="_blank" rel="noreferrer" class="button-solid">
+						<span>Open Live Application</span>
+						<Icon name="arrow-up-right" size={13} />
+					</a>
+				)}
+				{p.repoUrl && (
+					<a href={p.repoUrl} target="_blank" rel="noreferrer" class="button-outline">
+						<span>View Source Code</span>
+						<Icon name="arrow-up-right" size={13} />
+					</a>
+				)}
+				<button type="button" class="button-ghost" data-close-modal>
+					Close
+				</button>
+			</div>
+		</div>
+	</div>
+</dialog>

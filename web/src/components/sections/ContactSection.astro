@@ -1,0 +1,77 @@
+---
+import type { PROFILE_QUERY_RESULT } from '../../lib/sanity';
+
+interface Props {
+	profile?: PROFILE_QUERY_RESULT;
+	name: string;
+	year: number;
+	visitorNo: string;
+}
+
+const { profile, name, year, visitorNo } = Astro.props;
+---
+
+<!-- Panel 05: Contact & Colophon -->
+<section id="contact" class="horizontal-panel" data-panel-index="4" data-panel-title="Contact">
+	<div class="panel-inner">
+		<div class="editorial-section contact-section">
+			<div class="section-topbar">
+				<span class="section-kicker">TRANSMISSION &amp; CONNECT</span>
+				<h2 class="section-title">Get in Touch</h2>
+			</div>
+
+			<div class="contact-box">
+				<p class="contact-intro">
+					If you have a backend infrastructure challenge, a project inquiry, or want to discuss technical collaboration, write directly:
+				</p>
+
+				{profile?.email && (
+					<div class="contact-email-row">
+						<a href={`mailto:${profile.email}`} class="big-email-link">
+							{profile.email}
+						</a>
+						<button
+							type="button"
+							class="copy-btn"
+							id="copyEmailBtn"
+							data-email={profile.email}
+							title="Copy email to clipboard"
+						>
+							<span id="copyStatus">Copy Address</span>
+						</button>
+					</div>
+				)}
+
+				{profile?.socials && profile.socials.length > 0 && (
+					<div class="contact-social-row">
+						<span class="social-caption">Elsewhere:</span>
+						<div class="social-links-list">
+							{profile.socials.map((s) => (
+								<a href={s.url ?? '#'} target="_blank" rel="noreferrer" class="action-link">
+									{s.label} ↗
+								</a>
+							))}
+						</div>
+					</div>
+				)}
+			</div>
+		</div>
+
+		<!-- In-panel colophon footer -->
+		<div class="panel-footer-colophon">
+			<div class="footer-wrapper">
+				<div class="footer-col">
+					<span>{name}</span>
+					<span class="footer-dot">·</span>
+					<span>© {year}</span>
+				</div>
+				<div class="footer-col">
+					<span class="footer-quiet" id="visitorCounter">Visitor #{visitorNo}</span>
+				</div>
+				<div class="footer-col">
+					<button type="button" class="back-start-btn" data-nav-index="0">Back to start (01) ↑</button>
+				</div>
+			</div>
+		</div>
+	</div>
+</section>
